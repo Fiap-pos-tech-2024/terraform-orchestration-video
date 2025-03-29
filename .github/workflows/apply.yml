@@ -12,6 +12,11 @@ jobs:
       - name: Checkout Orchestration Repo
         uses: actions/checkout@v3
 
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7
+
       - name: Checkout network-terraform
         uses: actions/checkout@v3
         with:
