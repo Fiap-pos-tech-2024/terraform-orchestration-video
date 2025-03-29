@@ -81,13 +81,11 @@ jobs:
           terraform apply -auto-approve
 
       - name: 🔁 Exportar Outputs do Network
-        id: network_outputs
-        working-directory: network-terraform
         run: |
-          echo "vpc_id=$(terraform output -raw vpc_id)" >> $GITHUB_ENV
-          private_subnets=$(terraform output -json private_subnets | jq -r '.[]' | paste -sd "," -)
+          echo "vpc_id=$(terraform -chdir=network-terraform output -raw vpc_id)" >> $GITHUB_ENV
+          private_subnets=$(terraform -chdir=network-terraform output -json private_subnets | jq -r '.[]' | paste -sd "," -)
           echo "private_subnets=$private_subnets" >> $GITHUB_ENV
-          public_subnets=$(terraform output -json public_subnets | jq -r '.[]' | paste -sd "," -)
+          public_subnets=$(terraform -chdir=network-terraform output -json public_subnets | jq -r '.[]' | paste -sd "," -)
           echo "public_subnets=$public_subnets" >> $GITHUB_ENV
 
       #################################
@@ -103,12 +101,10 @@ jobs:
             -var="private_subnets=[\"${{ env.private_subnets }}\"]"
 
       - name: 🔁 Exportar Outputs do ALB
-        id: alb_outputs
-        working-directory: alb-terraform
         run: |
-          echo "alb_sg_id=$(terraform output -raw alb_sg_id)" >> $GITHUB_ENV
-          echo "alb_target_group_arn=$(terraform output -raw alb_target_group_arn)" >> $GITHUB_ENV
-          echo "alb_listener_arn=$(terraform output -raw alb_listener_arn)" >> $GITHUB_ENV
+          echo "alb_sg_id=$(terraform -chdir=alb-terraform output -raw alb_sg_id)" >> $GITHUB_ENV
+          echo "alb_target_group_arn=$(terraform -chdir=alb-terraform output -raw alb_target_group_arn)" >> $GITHUB_ENV
+          echo "alb_listener_arn=$(terraform -chdir=alb-terraform output -raw alb_listener_arn)" >> $GITHUB_ENV
 
       ##############################
       ## APPLY COGNITO DIRETO ##
@@ -121,10 +117,9 @@ jobs:
           terraform apply -auto-approve
 
       - name: 🔁 Exportar Outputs do Cognito
-        working-directory: cognito-terraform
         run: |
-          echo "cognito_user_pool_id=$(terraform output -raw user_pool_id)" >> $GITHUB_ENV
-          echo "cognito_client_id=$(terraform output -raw user_pool_client_id)" >> $GITHUB_ENV
+          echo "cognito_user_pool_id=$(terraform -chdir=cognito-terraform output -raw user_pool_id)" >> $GITHUB_ENV
+          echo "cognito_client_id=$(terraform -chdir=cognito-terraform output -raw user_pool_client_id)" >> $GITHUB_ENV
 
       #########################
       ## APPLY ECS DIRETO ##
@@ -157,9 +152,8 @@ jobs:
             -var="db_password=Senha123"
 
       - name: 🔁 Exportar Outputs do DB
-        working-directory: db-terraform
         run: |
-          echo "rds_endpoint=$(terraform output -raw rds_endpoint)" >> $GITHUB_ENV
+          echo "rds_endpoint=$(terraform -chdir=db-terraform output -raw rds_endpoint)" >> $GITHUB_ENV
 
       #################################
       ## API GATEWAY COM VPC LINK ##
@@ -175,9 +169,8 @@ jobs:
             -var="lb_security_group_id=${{ env.alb_sg_id }}"
 
       - name: 🔁 Exportar Output do API Gateway
-        working-directory: api-gateway-terraform
         run: |
-          echo "api_base_url=$(terraform output -raw http_api_endpoint)" >> $GITHUB_ENV
+          echo "api_base_url=$(terraform -chdir=api-gateway-terraform output -raw http_api_endpoint)" >> $GITHUB_ENV
 
       #################################
       ## GERAR .env.example FINAL ##
