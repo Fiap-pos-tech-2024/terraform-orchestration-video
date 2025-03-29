@@ -24,9 +24,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # Ordem reversa dos módulos para evitar dependências quebradas
-
-      - name: Destroy - API Gateway
+      # 🔁 Ordem reversa para evitar dependências quebradas
+      - name: 🔥 Destroy - API Gateway
         uses: actions/checkout@v3
         with:
           repository: eamaral/api-gateway-terraform
@@ -37,7 +36,7 @@ jobs:
           terraform init
           terraform destroy -auto-approve
 
-      - name: Destroy - ECS
+      - name: 🔥 Destroy - ECS
         uses: actions/checkout@v3
         with:
           repository: eamaral/ecs-terraform
@@ -48,7 +47,7 @@ jobs:
           terraform init
           terraform destroy -auto-approve
 
-      - name: Destroy - DB
+      - name: 🔥 Destroy - DB
         uses: actions/checkout@v3
         with:
           repository: eamaral/db-terraform
@@ -59,7 +58,7 @@ jobs:
           terraform init
           terraform destroy -auto-approve
 
-      - name: Destroy - Cognito
+      - name: 🔥 Destroy - Cognito
         uses: actions/checkout@v3
         with:
           repository: eamaral/cognito-terraform
@@ -70,7 +69,7 @@ jobs:
           terraform init
           terraform destroy -auto-approve
 
-      - name: Destroy - ALB
+      - name: 🔥 Destroy - ALB
         uses: actions/checkout@v3
         with:
           repository: eamaral/alb-terraform
@@ -81,7 +80,7 @@ jobs:
           terraform init
           terraform destroy -auto-approve
 
-      - name: Destroy - Network
+      - name: 🔥 Destroy - Network
         uses: actions/checkout@v3
         with:
           repository: eamaral/network-terraform
