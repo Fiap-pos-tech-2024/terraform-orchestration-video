@@ -5,6 +5,7 @@ on:
 
 jobs:
   apply-all:
+    name: Apply All Terraform Modules
     runs-on: ubuntu-latest
 
     steps:
@@ -16,14 +17,14 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      - name: ✅ Configure AWS Credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # CHECKOUTS
+      # Clonar os módulos Terraform
       - name: Checkout network-terraform
         uses: actions/checkout@v3
         with:
@@ -31,20 +32,6 @@ jobs:
           path: network-terraform
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Terraform Apply - network
-        working-directory: network-terraform
-        run: |
-          terraform init
-          terraform apply -auto-approve
-
-      - name: Get VPC ID and Subnets Outputs
-        id: network_outputs
-        run: |
-          echo "vpc_id=$(terraform -chdir=network-terraform output -raw vpc_id)" >> $GITHUB_OUTPUT
-          echo "private_subnets=$(terraform -chdir=network-terraform output -json private_subnets | jq -c)" >> $GITHUB_OUTPUT
-          echo "public_subnets=$(terraform -chdir=network-terraform output -json public_subnets | jq -c)" >> $GITHUB_OUTPUT
-
-      # ALB
       - name: Checkout alb-terraform
         uses: actions/checkout@v3
         with:
@@ -52,22 +39,6 @@ jobs:
           path: alb-terraform
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Terraform Apply - alb
-        working-directory: alb-terraform
-        run: |
-          terraform init
-          terraform apply -auto-approve \
-            -var="vpc_id=${{ steps.network_outputs.outputs.vpc_id }}" \
-            -var='private_subnets=${{ steps.network_outputs.outputs.private_subnets }}'
-
-      - name: Get ALB Listener ARN & SG
-        id: alb_outputs
-        run: |
-          echo "alb_listener_arn=$(terraform -chdir=alb-terraform output -raw alb_listener_arn)" >> $GITHUB_OUTPUT
-          echo "alb_sg_id=$(terraform -chdir=alb-terraform output -raw alb_sg_id)" >> $GITHUB_OUTPUT
-          echo "alb_target_group_arn=$(terraform -chdir=alb-terraform output -raw alb_target_group_arn)" >> $GITHUB_OUTPUT
-
-      # COGNITO
       - name: Checkout cognito-terraform
         uses: actions/checkout@v3
         with:
@@ -75,13 +46,6 @@ jobs:
           path: cognito-terraform
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Terraform Apply - cognito
-        working-directory: cognito-terraform
-        run: |
-          terraform init
-          terraform apply -auto-approve
-
-      # ECS
       - name: Checkout ecs-terraform
         uses: actions/checkout@v3
         with:
@@ -89,23 +53,6 @@ jobs:
           path: ecs-terraform
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Terraform Apply - ecs
-        working-directory: ecs-terraform
-        run: |
-          terraform init
-          terraform apply -auto-approve \
-            -var="vpc_id=${{ steps.network_outputs.outputs.vpc_id }}" \
-            -var='private_subnets=${{ steps.network_outputs.outputs.private_subnets }}' \
-            -var="alb_sg_id=${{ steps.alb_outputs.outputs.alb_sg_id }}" \
-            -var="alb_target_group_arn=${{ steps.alb_outputs.outputs.alb_target_group_arn }}" \
-            -var="ecr_image_url=124355673305.dkr.ecr.us-east-1.amazonaws.com/fastfood-backend:latest"
-
-      - name: Get ECS SG ID
-        id: ecs_outputs
-        run: |
-          echo "ecs_service_sg_id=$(terraform -chdir=ecs-terraform output -raw ecs_service_sg_id)" >> $GITHUB_OUTPUT
-
-      # DB
       - name: Checkout db-terraform
         uses: actions/checkout@v3
         with:
@@ -113,18 +60,6 @@ jobs:
           path: db-terraform
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Terraform Apply - db
-        working-directory: db-terraform
-        run: |
-          terraform init
-          terraform apply -auto-approve \
-            -var="vpc_id=${{ steps.network_outputs.outputs.vpc_id }}" \
-            -var='private_subnets=${{ steps.network_outputs.outputs.private_subnets }}' \
-            -var="ecs_service_sg_id=${{ steps.ecs_outputs.outputs.ecs_service_sg_id }}" \
-            -var="db_username=admin" \
-            -var="db_password=Senha123"
-
-      # API GATEWAY
       - name: Checkout api-gateway-terraform
         uses: actions/checkout@v3
         with:
@@ -132,29 +67,67 @@ jobs:
           path: api-gateway-terraform
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+      # 📌 Apply na ordem correta
+      - name: Terraform Apply - network
+        working-directory: network-terraform
+        run: terraform init && terraform apply -auto-approve
+
+      - name: Terraform Apply - alb
+        working-directory: alb-terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve \
+            -var="vpc_id=$(terraform -chdir=../network-terraform output -raw vpc_id)" \
+            -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets | jq -c)"
+
+      - name: Terraform Apply - cognito
+        working-directory: cognito-terraform
+        run: terraform init && terraform apply -auto-approve
+
+      - name: Terraform Apply - ecs
+        working-directory: ecs-terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve \
+            -var="vpc_id=$(terraform -chdir=../network-terraform output -raw vpc_id)" \
+            -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets | jq -c)" \
+            -var="alb_target_group_arn=$(terraform -chdir=../alb-terraform output -raw alb_target_group_arn)" \
+            -var="alb_sg_id=$(terraform -chdir=../alb-terraform output -raw alb_sg_id)" \
+            -var="ecr_image_url=124355673305.dkr.ecr.us-east-1.amazonaws.com/fastfood-backend:latest"
+
+      - name: Terraform Apply - db
+        working-directory: db-terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve \
+            -var="vpc_id=$(terraform -chdir=../network-terraform output -raw vpc_id)" \
+            -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets | jq -c)" \
+            -var="ecs_service_sg_id=$(terraform -chdir=../ecs-terraform output -raw ecs_service_sg_id)" \
+            -var="db_username=admin" \
+            -var="db_password=Senha123"
+
       - name: Terraform Apply - api-gateway
         working-directory: api-gateway-terraform
         run: |
           terraform init
           terraform apply -auto-approve \
-            -var='private_subnets=${{ steps.network_outputs.outputs.private_subnets }}' \
-            -var="lb_security_group_id=${{ steps.alb_outputs.outputs.alb_sg_id }}" \
-            -var="alb_listener_arn=${{ steps.alb_outputs.outputs.alb_listener_arn }}"
+            -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets | jq -c)" \
+            -var="alb_listener_arn=$(terraform -chdir=../alb-terraform output -raw alb_listener_arn)" \
+            -var="lb_security_group_id=$(terraform -chdir=../alb-terraform output -raw alb_sg_id)"
 
-      # GERA .env.example
-      - name: Dar permissão de execução ao script
-        run: chmod +x generate-env.sh
-
-      - name: Gerar .env.example com outputs do Terraform
-        run: ./generate-env.sh
-
-      - name: Commitar .env.example no repositório do backend
+      # ⬇️ Substituir a URL no index.js
+      - name: Atualizar index.js com nova URL da API
         run: |
+          API_URL=$(terraform -chdir=api-gateway-terraform output -raw http_api_endpoint)
           git clone https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/eamaral/fastfood-backend.git
           cd fastfood-backend
-          mv ../.env.example .env.example
+          sed -i "s|https://.*\.execute-api\.us-east-1\.amazonaws\.com/api|$API_URL/api|g" index.js
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add .env.example
-          git commit -m "Atualiza .env.example com outputs do Terraform" || echo "Nada para commitar"
+          git add index.js
+          git commit -m "🔄 Atualiza URL do Swagger com API Gateway: $API_URL" || echo "Nada para commitar"
           git push origin main
+          echo "🚀 Swagger: $API_URL/api-docs"
+
+      - name: 🔗 Publicar URL da API
+        run: echo "::notice title=Swagger Disponível::$(terraform -chdir=api-gateway-terraform output -raw http_api_endpoint)/api-docs"
