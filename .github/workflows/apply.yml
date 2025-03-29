@@ -176,7 +176,8 @@ jobs:
 
       - name: 🔁 Exportar Output do API Gateway
         working-directory: api-gateway-terraform
-        run: echo "api_base_url=$(terraform output -raw http_api_endpoint)" >> $GITHUB_ENV
+        run: |
+          echo "api_base_url=$(terraform output -raw http_api_endpoint)" >> $GITHUB_ENV
 
       #################################
       ## GERAR .env.example FINAL ##
