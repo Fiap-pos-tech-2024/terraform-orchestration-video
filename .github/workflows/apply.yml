@@ -85,8 +85,10 @@ jobs:
         working-directory: network-terraform
         run: |
           echo "vpc_id=$(terraform output -raw vpc_id)" >> $GITHUB_ENV
-          echo "private_subnets=$(terraform output -json private_subnets | jq -r 'join(",")')" >> $GITHUB_ENV
-          echo "public_subnets=$(terraform output -json public_subnets | jq -r 'join(",")')" >> $GITHUB_ENV
+          private_subnets=$(terraform output -json private_subnets | jq -r '.[]' | paste -sd "," -)
+          echo "private_subnets=$private_subnets" >> $GITHUB_ENV
+          public_subnets=$(terraform output -json public_subnets | jq -r '.[]' | paste -sd "," -)
+          echo "public_subnets=$public_subnets" >> $GITHUB_ENV
 
       #################################
       ## APPLY ALB COM INPUT DINÂMICO ##
