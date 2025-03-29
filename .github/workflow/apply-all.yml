@@ -26,6 +26,13 @@ jobs:
           path: alb-terraform
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+      - name: Checkout cognito-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/cognito-terraform
+          path: cognito-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
       - name: Checkout ecs-terraform
         uses: actions/checkout@v3
         with:
@@ -59,6 +66,12 @@ jobs:
           terraform init
           terraform apply -auto-approve
 
+      - name: Terraform Apply - cognito
+        working-directory: cognito-terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve
+
       - name: Terraform Apply - ecs
         working-directory: ecs-terraform
         run: |
@@ -76,3 +89,20 @@ jobs:
         run: |
           terraform init
           terraform apply -auto-approve
+
+      - name: Dar permissão de execução ao script
+        run: chmod +x generate-env.sh
+
+      - name: Gerar .env.example com outputs do Terraform
+        run: ./generate-env.sh
+
+      - name: Commitar .env.example no repositório do backend
+        run: |
+          git clone https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/eamaral/fastfood-backend.git
+          cd fastfood-backend
+          mv ../.env.example .env.example
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .env.example
+          git commit -m "Atualiza .env.example com outputs do Terraform" || echo "Nada para commitar"
+          git push origin main
