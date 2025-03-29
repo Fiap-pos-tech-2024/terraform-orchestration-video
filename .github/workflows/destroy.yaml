@@ -1,0 +1,91 @@
+name: Terraform Destroy All
+
+on:
+  workflow_dispatch:
+
+jobs:
+  destroy-all:
+    name: Destroy All Terraform Modules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Orchestration Repo
+        uses: actions/checkout@v3
+
+      - name: Checkout api-gateway-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/api-gateway-terraform
+          path: api-gateway-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Checkout ecs-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/ecs-terraform
+          path: ecs-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Checkout db-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/db-terraform
+          path: db-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Checkout cognito-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/cognito-terraform
+          path: cognito-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Checkout alb-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/alb-terraform
+          path: alb-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Checkout network-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/network-terraform
+          path: network-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Terraform Destroy - api-gateway
+        working-directory: api-gateway-terraform
+        run: |
+          terraform init
+          terraform destroy -auto-approve
+
+      - name: Terraform Destroy - ecs
+        working-directory: ecs-terraform
+        run: |
+          terraform init
+          terraform destroy -auto-approve
+
+      - name: Terraform Destroy - db
+        working-directory: db-terraform
+        run: |
+          terraform init
+          terraform destroy -auto-approve
+
+      - name: Terraform Destroy - cognito
+        working-directory: cognito-terraform
+        run: |
+          terraform init
+          terraform destroy -auto-approve
+
+      - name: Terraform Destroy - alb
+        working-directory: alb-terraform
+        run: |
+          terraform init
+          terraform destroy -auto-approve
+
+      - name: Terraform Destroy - network
+        working-directory: network-terraform
+        run: |
+          terraform init
+          terraform destroy -auto-approve
