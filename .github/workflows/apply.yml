@@ -5,7 +5,6 @@ on:
 
 jobs:
   apply-all:
-    name: Apply All Terraform Modules
     runs-on: ubuntu-latest
 
     steps:
@@ -17,48 +16,6 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      - name: Checkout network-terraform
-        uses: actions/checkout@v3
-        with:
-          repository: eamaral/network-terraform
-          path: network-terraform
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
-      - name: Checkout alb-terraform
-        uses: actions/checkout@v3
-        with:
-          repository: eamaral/alb-terraform
-          path: alb-terraform
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
-      - name: Checkout cognito-terraform
-        uses: actions/checkout@v3
-        with:
-          repository: eamaral/cognito-terraform
-          path: cognito-terraform
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
-      - name: Checkout ecs-terraform
-        uses: actions/checkout@v3
-        with:
-          repository: eamaral/ecs-terraform
-          path: ecs-terraform
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
-      - name: Checkout db-terraform
-        uses: actions/checkout@v3
-        with:
-          repository: eamaral/db-terraform
-          path: db-terraform
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
-      - name: Checkout api-gateway-terraform
-        uses: actions/checkout@v3
-        with:
-          repository: eamaral/api-gateway-terraform
-          path: api-gateway-terraform
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
       - name: ✅ Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -66,17 +23,57 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      # CHECKOUTS
+      - name: Checkout network-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/network-terraform
+          path: network-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
       - name: Terraform Apply - network
         working-directory: network-terraform
         run: |
           terraform init
           terraform apply -auto-approve
 
+      - name: Get VPC ID and Subnets Outputs
+        id: network_outputs
+        run: |
+          echo "vpc_id=$(terraform -chdir=network-terraform output -raw vpc_id)" >> $GITHUB_OUTPUT
+          echo "private_subnets=$(terraform -chdir=network-terraform output -json private_subnets | jq -c)" >> $GITHUB_OUTPUT
+          echo "public_subnets=$(terraform -chdir=network-terraform output -json public_subnets | jq -c)" >> $GITHUB_OUTPUT
+
+      # ALB
+      - name: Checkout alb-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/alb-terraform
+          path: alb-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
       - name: Terraform Apply - alb
         working-directory: alb-terraform
         run: |
           terraform init
-          terraform apply -auto-approve -var="vpc_id=$(terraform -chdir=../network-terraform output -raw vpc_id)" -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets)"
+          terraform apply -auto-approve \
+            -var="vpc_id=${{ steps.network_outputs.outputs.vpc_id }}" \
+            -var='private_subnets=${{ steps.network_outputs.outputs.private_subnets }}'
+
+      - name: Get ALB Listener ARN & SG
+        id: alb_outputs
+        run: |
+          echo "alb_listener_arn=$(terraform -chdir=alb-terraform output -raw alb_listener_arn)" >> $GITHUB_OUTPUT
+          echo "alb_sg_id=$(terraform -chdir=alb-terraform output -raw alb_sg_id)" >> $GITHUB_OUTPUT
+          echo "alb_target_group_arn=$(terraform -chdir=alb-terraform output -raw alb_target_group_arn)" >> $GITHUB_OUTPUT
+
+      # COGNITO
+      - name: Checkout cognito-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/cognito-terraform
+          path: cognito-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Terraform Apply - cognito
         working-directory: cognito-terraform
@@ -84,37 +81,67 @@ jobs:
           terraform init
           terraform apply -auto-approve
 
+      # ECS
+      - name: Checkout ecs-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/ecs-terraform
+          path: ecs-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
       - name: Terraform Apply - ecs
         working-directory: ecs-terraform
         run: |
           terraform init
           terraform apply -auto-approve \
-            -var="vpc_id=$(terraform -chdir=../network-terraform output -raw vpc_id)" \
-            -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets)" \
-            -var="alb_target_group_arn=$(terraform -chdir=../alb-terraform output -raw target_group_arn)" \
-            -var="alb_sg_id=$(terraform -chdir=../alb-terraform output -raw alb_sg_id)" \
+            -var="vpc_id=${{ steps.network_outputs.outputs.vpc_id }}" \
+            -var='private_subnets=${{ steps.network_outputs.outputs.private_subnets }}' \
+            -var="alb_sg_id=${{ steps.alb_outputs.outputs.alb_sg_id }}" \
+            -var="alb_target_group_arn=${{ steps.alb_outputs.outputs.alb_target_group_arn }}" \
             -var="ecr_image_url=124355673305.dkr.ecr.us-east-1.amazonaws.com/fastfood-backend:latest"
+
+      - name: Get ECS SG ID
+        id: ecs_outputs
+        run: |
+          echo "ecs_service_sg_id=$(terraform -chdir=ecs-terraform output -raw ecs_service_sg_id)" >> $GITHUB_OUTPUT
+
+      # DB
+      - name: Checkout db-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/db-terraform
+          path: db-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Terraform Apply - db
         working-directory: db-terraform
         run: |
           terraform init
           terraform apply -auto-approve \
-            -var="vpc_id=$(terraform -chdir=../network-terraform output -raw vpc_id)" \
-            -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets)" \
-            -var="ecs_service_sg_id=$(terraform -chdir=../ecs-terraform output -raw ecs_service_sg_id)" \
+            -var="vpc_id=${{ steps.network_outputs.outputs.vpc_id }}" \
+            -var='private_subnets=${{ steps.network_outputs.outputs.private_subnets }}' \
+            -var="ecs_service_sg_id=${{ steps.ecs_outputs.outputs.ecs_service_sg_id }}" \
             -var="db_username=admin" \
             -var="db_password=Senha123"
+
+      # API GATEWAY
+      - name: Checkout api-gateway-terraform
+        uses: actions/checkout@v3
+        with:
+          repository: eamaral/api-gateway-terraform
+          path: api-gateway-terraform
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Terraform Apply - api-gateway
         working-directory: api-gateway-terraform
         run: |
           terraform init
           terraform apply -auto-approve \
-            -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets)" \
-            -var="alb_listener_arn=$(terraform -chdir=../alb-terraform output -raw alb_listener_arn)" \
-            -var="lb_security_group_id=$(terraform -chdir=../alb-terraform output -raw alb_sg_id)"
+            -var='private_subnets=${{ steps.network_outputs.outputs.private_subnets }}' \
+            -var="lb_security_group_id=${{ steps.alb_outputs.outputs.alb_sg_id }}" \
+            -var="alb_listener_arn=${{ steps.alb_outputs.outputs.alb_listener_arn }}"
 
+      # GERA .env.example
       - name: Dar permissão de execução ao script
         run: chmod +x generate-env.sh
 
