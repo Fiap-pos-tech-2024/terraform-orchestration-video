@@ -59,6 +59,13 @@ jobs:
           path: api-gateway-terraform
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+      - name: ✅ Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
       - name: Terraform Apply - network
         working-directory: network-terraform
         run: |
@@ -69,7 +76,7 @@ jobs:
         working-directory: alb-terraform
         run: |
           terraform init
-          terraform apply -auto-approve
+          terraform apply -auto-approve -var="vpc_id=$(terraform -chdir=../network-terraform output -raw vpc_id)" -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets)"
 
       - name: Terraform Apply - cognito
         working-directory: cognito-terraform
@@ -81,19 +88,32 @@ jobs:
         working-directory: ecs-terraform
         run: |
           terraform init
-          terraform apply -auto-approve
+          terraform apply -auto-approve \
+            -var="vpc_id=$(terraform -chdir=../network-terraform output -raw vpc_id)" \
+            -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets)" \
+            -var="alb_target_group_arn=$(terraform -chdir=../alb-terraform output -raw target_group_arn)" \
+            -var="alb_sg_id=$(terraform -chdir=../alb-terraform output -raw alb_sg_id)" \
+            -var="ecr_image_url=124355673305.dkr.ecr.us-east-1.amazonaws.com/fastfood-backend:latest"
 
       - name: Terraform Apply - db
         working-directory: db-terraform
         run: |
           terraform init
-          terraform apply -auto-approve
+          terraform apply -auto-approve \
+            -var="vpc_id=$(terraform -chdir=../network-terraform output -raw vpc_id)" \
+            -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets)" \
+            -var="ecs_service_sg_id=$(terraform -chdir=../ecs-terraform output -raw ecs_service_sg_id)" \
+            -var="db_username=admin" \
+            -var="db_password=Senha123"
 
       - name: Terraform Apply - api-gateway
         working-directory: api-gateway-terraform
         run: |
           terraform init
-          terraform apply -auto-approve
+          terraform apply -auto-approve \
+            -var="private_subnets=$(terraform -chdir=../network-terraform output -json private_subnets)" \
+            -var="alb_listener_arn=$(terraform -chdir=../alb-terraform output -raw alb_listener_arn)" \
+            -var="lb_security_group_id=$(terraform -chdir=../alb-terraform output -raw alb_sg_id)"
 
       - name: Dar permissão de execução ao script
         run: chmod +x generate-env.sh
