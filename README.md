@@ -1,78 +1,83 @@
-# Terraform Orchestration - Fastfood Infraestrutura
+# ☁️ Terraform Orchestration
 
-Este repositório contém os scripts de automação responsáveis por **orquestrar o provisionamento e destruição completa da infraestrutura** do projeto Fastfood, utilizando múltiplos módulos Terraform separados.
-
----
-
-## 🔧 Requisitos
-
-- Terraform instalado (`>= 1.0`)
-- AWS CLI configurado com credenciais válidas
-- Permissões administrativas na conta AWS
+Este repositório organiza toda a **infraestrutura dos microsserviços da lanchonete** na AWS usando **Terraform**. Cada pasta representa um módulo independente e reutilizável, seguindo uma estrutura desacoplada.
 
 ---
 
-## 📂 Estrutura Esperada
+## 📦 Módulos
 
-Este repositório assume que os seguintes repositórios (ou subdiretórios) estejam clonados no mesmo nível:
-
-```
-.
-├── terraform-orchestration
-├── network-terraform
-├── alb-terraform
-├── cognito-terraform
-├── ecs-terraform
-├── db-terraform
-├── api-gateway-terraform
-```
+| Diretório                     | Função                                                           |
+|------------------------------|------------------------------------------------------------------|
+| `network-terraform/`         | Criação de VPC, Subnets, Internet Gateway, etc.                  |
+| `cognito-terraform/`         | Autenticação com AWS Cognito (User Pool + App Client)            |
+| `terraform-backend/`         | Criação do bucket S3 + DynamoDB para controlar o estado remoto   |
+| `terraform-alb/`             | Load Balancer compartilhado entre os microsserviços              |
+| `cliente-db-terraform/`      | Banco RDS MySQL para o cliente-service                           |
+| `pedido-db-terraform/`       | Banco RDS MySQL para o pedido-service                            |
+| `pagamento-db-terraform/`    | Tabela DynamoDB para o pagamento-service                         |
+| `terraform-cliente-service/` | ECS Fargate para o cliente-service + ALB target group            |
+| `terraform-pedido-service/`  | ECS Fargate para o pedido-service + ALB target group             |
+| `terraform-pagamento-service/` | ECS Fargate para o pagamento-service + DynamoDB + MP Webhook  |
+| `terraform-github-oidc/`     | Permissões para GitHub Actions assumirem roles com OIDC          |
 
 ---
 
-## 🚀 Como aplicar toda a infraestrutura
+## 🔁 Ordem de Execução
+
+> Recomendado aplicar na seguinte ordem:
 
 ```bash
-./apply-all.sh
+# Backend e estado remoto
+cd terraform-backend
+terraform init && terraform apply
+
+# Infra de rede base
+cd ../network-terraform
+terraform init && terraform apply
+
+# Autenticação
+cd ../cognito-terraform
+terraform init && terraform apply
+
+# ALB compartilhado
+cd ../terraform-alb
+terraform init && terraform apply
+
+# Databases
+cd ../cliente-db-terraform && terraform apply
+cd ../pedido-db-terraform && terraform apply
+cd ../pagamento-db-terraform && terraform apply
+
+# Roles GitHub OIDC
+cd ../terraform-github-oidc
+terraform apply
+
+# Microsserviços
+cd ../terraform-cliente-service
+terraform apply
+
+cd ../terraform-pedido-service
+terraform apply
+
+cd ../terraform-pagamento-service
+terraform apply
 ```
 
-Esse script:
-
-- Aplica todos os módulos Terraform na ordem correta
-- Extrai os outputs e injeta dinamicamente nos próximos módulos
-- Gera a aplicação backend completamente funcional com URL da API pública
-
-> Ao final, será exibido o link da API e o link da documentação Swagger.
+> ⚠️ Certifique-se de preencher os `terraform.tfvars` com os outputs corretos entre módulos (ex: `subnet_ids`, `vpc_id`, `db_password`, etc).
 
 ---
 
-## 💣 Como destruir toda a infraestrutura
+## 📁 Backend Terraform
 
-```bash
-./destroy-all.sh
-```
+O controle de estado (`terraform.tfstate`) é feito de forma **centralizada**:
 
-Esse script destrói **todos os recursos criados**, garantindo que nenhum custo adicional permaneça.
-
----
-
-## 📘 Observações
-
-- Os arquivos `.terraform`, `.terraform.lock.hcl` e `terraform.tfstate` são regenerados automaticamente
-- O backend da aplicação é publicado automaticamente via **GitHub Actions** (CI/CD)
+- Bucket: `terraform-states-816069165502`
+- DynamoDB: para lock de estado
+- Configurado no `terraform-backend/` e referenciado nos demais módulos
 
 ---
 
-## 🔒 Segurança
+## 🧾 Licença
 
-- Nenhuma variável sensível é hardcoded nos scripts
-- A destruição é segura, pois os módulos estão protegidos contra execução acidental
+Projeto acadêmico com provisionamento completo na AWS usando IAC.
 
----
-
-## ✅ Status da Infraestrutura
-
-✅ Infraestrutura testada com sucesso  
-✅ API Gateway com VPC Link para ALB interno  
-✅ Backend rodando em ECS Fargate  
-✅ Banco RDS acessado via subnets privadas  
-✅ CI/CD automatizado via GitHub Actions
