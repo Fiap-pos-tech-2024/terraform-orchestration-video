@@ -8,7 +8,7 @@ Este repositório contém a infraestrutura como código (IaC) do sistema de aute
 
 ```bash
 terraform-orchestration-video/
-├── terraform-backend/           # Criação do bucket S3 + DynamoDB para estados remotos
+├── terraform-backend/           # Criação do bucket S3 para estados remotos
 ├── terraform-network/           # VPC, Subnets, IGW, roteamento
 ├── terraform-cognito/           # User Pool, App Client e configurações do Cognito
 ├── terraform-user-db/           # Banco de dados MySQL para armazenar os usuários
