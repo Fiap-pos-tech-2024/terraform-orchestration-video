@@ -24,7 +24,7 @@ Cada módulo é **isolado e com estado remoto próprio**, armazenado no bucket S
 ## 🧭 Ordem de Execução Recomendada
 
 ```bash
-# 1. Criar bucket S3 e DynamoDB para backend remoto (obrigatório)
+# 1. Criar bucket S3 para backend remoto (obrigatório)
 cd terraform-backend
 terraform apply
 
