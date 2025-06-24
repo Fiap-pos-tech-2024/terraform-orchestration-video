@@ -1,17 +1,16 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+
 variable "aws_region" {
   description = "Região AWS"
   type        = string
   default     = "us-east-1"
-}
-
-variable "vpc_id" {
-  description = "ID da VPC (do network-terraform)"
-  type        = string
-}
-
-variable "subnet_ids" {
-  description = "Lista de subnets para o RDS (do network-terraform)"
-  type        = list(string)
 }
 
 variable "instance_class" {
@@ -21,7 +20,7 @@ variable "instance_class" {
 }
 
 variable "allocated_storage" {
-  description = "Armazenamento (GB)"
+  description = "GB de armazenamento"
   type        = number
   default     = 20
 }
@@ -29,16 +28,18 @@ variable "allocated_storage" {
 variable "db_username" {
   description = "Usuário do banco"
   type        = string
-  default     = "admin"
-}
-
-variable "db_password" {
-  description = "Senha do banco"
-  type        = string
+  default     = "fiap"
 }
 
 variable "db_name" {
   description = "Nome do schema"
   type        = string
-  default     = "pedidos"
+  default     = "authdb"
 }
+
+variable "db_password" {
+  description = "Senha do banco"
+  type        = string
+  default     = "fiap1234" 
+}
+

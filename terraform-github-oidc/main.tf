@@ -1,29 +1,22 @@
- variable "aws_account_id" {
-  description = "AWS Account ID"
-  type        = string
+terraform {
+  backend "s3" {
+    bucket = "terraform-states-816069165502"
+    key    = "github-oidc/terraform.tfstate"
+    region = "us-east-1"
+    encrypt = true
+  }
 }
 
-variable "region" {
-  description = "AWS region"
-  type        = string
-  default     = "us-east-1"
+provider "aws" {
+  region = var.region
 }
 
-variable "services" {
-  description = "Lista de microsserviços com seus repositórios GitHub"
-  type = map(object({
-    repository = string
-  }))
-  default = {
-    cliente-service = {
-      repository = "eamaral/cliente-service"
-    },
-    pedido-service = {
-      repository = "eamaral/pedido-service"
-    },
-    pagamento-service = {
-      repository = "eamaral/pagamento-service"
-    }
+data "terraform_remote_state" "cognito" {
+  backend = "s3"
+  config = {
+    bucket = "terraform-states-816069165502"
+    key    = "cognito/terraform.tfstate"
+    region = "us-east-1"
   }
 }
 
@@ -57,7 +50,7 @@ resource "aws_iam_role" "github_oidc_roles" {
         Action = "sts:AssumeRoleWithWebIdentity",
         Condition = {
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:${each.value.repository}:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:sub" = "repo:${each.value.repository}:*"
           }
         }
       }
@@ -65,7 +58,8 @@ resource "aws_iam_role" "github_oidc_roles" {
   })
 }
 
-# Policy de push ECR + update ECS
+
+# Policy de push ECR + update ECS + Cognito (com user_pool_id dinâmico)
 resource "aws_iam_role_policy" "ecr_ecs_and_cognito_permissions" {
   for_each = aws_iam_role.github_oidc_roles
 
@@ -101,14 +95,22 @@ resource "aws_iam_role_policy" "ecr_ecs_and_cognito_permissions" {
       {
         Effect = "Allow",
         Action = [
+          "elasticloadbalancing:DescribeLoadBalancers",
+          "elasticloadbalancing:DescribeTargetGroups",
+          "elasticloadbalancing:DescribeListeners"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
           "cognito-idp:AdminCreateUser",
           "cognito-idp:AdminInitiateAuth",
           "cognito-idp:RespondToAuthChallenge"
         ],
-        Resource = "arn:aws:cognito-idp:us-east-1:816069165502:userpool/us-east-1_NS0kvTWfX"
+        Resource = "arn:aws:cognito-idp:${var.region}:${var.aws_account_id}:userpool/${data.terraform_remote_state.cognito.outputs.user_pool_id}"
       }
     ]
   })
 }
-
 

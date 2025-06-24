@@ -1,83 +1,97 @@
-# ☁️ Terraform Orchestration
+# ☁️ Terraform Orchestration — Projeto Video Auth (FIAP X)
 
-Este repositório organiza toda a **infraestrutura dos microsserviços da lanchonete** na AWS usando **Terraform**. Cada pasta representa um módulo independente e reutilizável, seguindo uma estrutura desacoplada.
-
----
-
-## 📦 Módulos
-
-| Diretório                     | Função                                                           |
-|------------------------------|------------------------------------------------------------------|
-| `network-terraform/`         | Criação de VPC, Subnets, Internet Gateway, etc.                  |
-| `cognito-terraform/`         | Autenticação com AWS Cognito (User Pool + App Client)            |
-| `terraform-backend/`         | Criação do bucket S3 + DynamoDB para controlar o estado remoto   |
-| `terraform-alb/`             | Load Balancer compartilhado entre os microsserviços              |
-| `cliente-db-terraform/`      | Banco RDS MySQL para o cliente-service                           |
-| `pedido-db-terraform/`       | Banco RDS MySQL para o pedido-service                            |
-| `pagamento-db-terraform/`    | Tabela DynamoDB para o pagamento-service                         |
-| `terraform-cliente-service/` | ECS Fargate para o cliente-service + ALB target group            |
-| `terraform-pedido-service/`  | ECS Fargate para o pedido-service + ALB target group             |
-| `terraform-pagamento-service/` | ECS Fargate para o pagamento-service + DynamoDB + MP Webhook  |
-| `terraform-github-oidc/`     | Permissões para GitHub Actions assumirem roles com OIDC          |
+Este repositório contém a infraestrutura como código (IaC) do sistema de autenticação da plataforma de vídeos da FIAP X. Cada módulo é independente e representa uma parte da arquitetura em nuvem provisionada via **Terraform**.
 
 ---
 
-## 🔁 Ordem de Execução
-
-> Recomendado aplicar na seguinte ordem:
+## 📦 Estrutura de Módulos
 
 ```bash
-# Backend e estado remoto
+terraform-orchestration-video/
+├── terraform-backend/           # Criação do bucket S3 + DynamoDB para estados remotos
+├── terraform-network/           # VPC, Subnets, IGW, roteamento
+├── terraform-cognito/           # User Pool, App Client e configurações do Cognito
+├── terraform-user-db/           # Banco de dados MySQL para armazenar os usuários
+├── terraform-alb/               # Application Load Balancer compartilhado
+├── terraform-github-oidc/       # Integração com GitHub Actions via OIDC
+├── terraform-video-auth-service # ECS Fargate, Service, Task, SG e ECR para o microsserviço
+```
+
+Cada módulo é **isolado e com estado remoto próprio**, armazenado no bucket S3 `terraform-states-<AWS_ACCOUNT_ID>`.
+
+---
+
+## 🧭 Ordem de Execução Recomendada
+
+```bash
+# 1. Criar bucket S3 e DynamoDB para backend remoto (obrigatório)
 cd terraform-backend
-terraform init && terraform apply
-
-# Infra de rede base
-cd ../network-terraform
-terraform init && terraform apply
-
-# Autenticação
-cd ../cognito-terraform
-terraform init && terraform apply
-
-# ALB compartilhado
-cd ../terraform-alb
-terraform init && terraform apply
-
-# Databases
-cd ../cliente-db-terraform && terraform apply
-cd ../pedido-db-terraform && terraform apply
-cd ../pagamento-db-terraform && terraform apply
-
-# Roles GitHub OIDC
-cd ../terraform-github-oidc
 terraform apply
 
-# Microsserviços
-cd ../terraform-cliente-service
+# 2. Provisionar rede compartilhada
+cd terraform-network
 terraform apply
 
-cd ../terraform-pedido-service
+# 3. Provisionar Cognito
+cd terraform-cognito
 terraform apply
 
-cd ../terraform-pagamento-service
+# 4. Provisionar banco de dados do serviço de auth
+cd terraform-user-db
+terraform apply
+
+# 5. Provisionar o Load Balancer compartilhado
+cd terraform-alb
+terraform apply
+
+# 6. Provisionar integração com GitHub Actions (OIDC)
+cd terraform-github-oidc
+terraform apply
+
+# 7. Provisionar o ECS do video-auth-service
+cd terraform-video-auth-service
 terraform apply
 ```
 
-> ⚠️ Certifique-se de preencher os `terraform.tfvars` com os outputs corretos entre módulos (ex: `subnet_ids`, `vpc_id`, `db_password`, etc).
+> ✅ A ordem acima respeita as dependências entre os módulos (por exemplo: `video-auth-service` depende do estado remoto de `network`, `alb`, `cognito` e `user-db`).
 
 ---
 
-## 📁 Backend Terraform
+## 📘 Documentação por Módulo
 
-O controle de estado (`terraform.tfstate`) é feito de forma **centralizada**:
+Os módulos abaixo possuem `README.md` com orientações detalhadas:
 
-- Bucket: `terraform-states-816069165502`
-- DynamoDB: para lock de estado
-- Configurado no `terraform-backend/` e referenciado nos demais módulos
+- [`terraform-github-oidc`](./terraform-github-oidc) — Integração com GitHub Actions via OIDC  
+- [`terraform-alb`](./terraform-alb) — Regras de roteamento para microsserviços via ALB  
+- [`terraform-video-auth-service`](./terraform-video-auth-service) — Deploy ECS Fargate do microsserviço de autenticação
+
+---
+
+## 🔐 Segurança
+
+Este projeto utiliza o padrão **GitHub OIDC + IAM Roles** para evitar o uso de credenciais estáticas. Nenhuma `AWS_SECRET_ACCESS_KEY` é armazenada em pipelines.
+
+---
+
+## 🧪 Ambientes e Observabilidade
+
+- Deploy contínuo via GitHub Actions
+- Logs no CloudWatch
+- Métricas Prometheus disponíveis via `/metrics`
+- Integração futura com Grafana
+
+---
+
+## 👩‍💻 Como adicionar um novo microsserviço
+
+1. Criar um novo diretório `terraform-nome-do-servico`
+2. Copiar o template de `terraform-video-auth-service`
+3. Ajustar nomes, portas, variáveis, ALB e regras de segurança
+4. Adicionar a role no módulo `terraform-github-oidc`
+5. Aplicar normalmente com `terraform apply`
 
 ---
 
 ## 🧾 Licença
 
-Projeto acadêmico com provisionamento completo na AWS usando IAC.
-
+Uso acadêmico autorizado. Parte do projeto de pós-graduação da FIAP — FIAP X.
