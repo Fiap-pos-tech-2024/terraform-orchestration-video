@@ -42,3 +42,25 @@ resource "aws_iam_role_policy" "ecs_task_cognito_policy" {
     ]
   })
 }
+
+resource "aws_iam_role_policy" "ecs_logs_alloy_policy" {
+  name = "ecs-logs-grafana-alloy"
+  role = aws_iam_role.ecs_task_execution_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid: "CloudWatchLogsAccess",
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams",
+          "logs:DescribeLogGroups"
+        ],
+        Resource = "arn:aws:logs:us-east-1:*:log-group:/ecs/grafana-alloy:*"
+      }
+    ]
+  })
+}
