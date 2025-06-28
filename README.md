@@ -71,13 +71,7 @@ O módulo `terraform-monitoring-grafana-alloy` exige que você forneça manualme
 
 ### Como configurar
 
-1. Copie o arquivo de exemplo:
-
-```bash
-cp terraform-monitoring-grafana-alloy/terraform.tfvars.example terraform-monitoring-grafana-alloy/terraform.tfvars
-```
-
-2. Edite o arquivo `terraform.tfvars` com os valores da sua conta Grafana:
+1. Edite o arquivo `terraform.tfvars` com os valores da sua conta Grafana:
 
 ```hcl
 grafana_username         = "<seu ID de usuário no Grafana Cloud>"
