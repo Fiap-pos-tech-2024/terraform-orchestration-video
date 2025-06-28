@@ -12,3 +12,8 @@ output "alb_security_group_id" {
   description = "Security group do ALB (usado no ECS para liberar entrada)"
   value       = aws_security_group.alb_sg.id
 }
+
+output "alb_listener_arn" {
+  description = "ARN do listener HTTP (porta 80) do ALB"
+  value       = aws_lb_listener.http.arn
+}
