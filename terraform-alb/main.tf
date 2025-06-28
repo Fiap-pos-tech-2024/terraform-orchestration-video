@@ -99,14 +99,10 @@ resource "aws_lb_listener_rule" "video_auth_service_rule" {
 
   condition {
     path_pattern {
-      values = ["/auth-docs*", "/api/auth*", "/api/usuarios*", "/health"]
+      values = ["/auth-docs*", "/api/auth*", "/api/usuarios*", "/health", "/metrics"]
     }
   }
 }
 
-# --- Comentado para referência futura ---
-# resource "aws_lb_target_group" "example1_service" { ... }
-# resource "aws_lb_listener_rule" "example1_service_rule" { ... }
 
-# resource "aws_lb_target_group" "example2_service" { ... }
-# resource "aws_lb_listener_rule" "example2_service_rule" { ... }
+
