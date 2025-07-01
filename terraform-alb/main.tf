@@ -99,7 +99,7 @@ resource "aws_lb_listener_rule" "video_auth_service_rule" {
 
   condition {
     path_pattern {
-      values = ["/auth-docs*", "/api/auth*", "/api/usuarios*", "/health", "/metrics"]
+      values = ["/auth-docs*", "/api/auth*", "/api/usuarios*", "/health", "/auth-metrics"]
     }
   }
 }
