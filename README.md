@@ -65,27 +65,38 @@ Esse script executa:
 - [`terraform-monitoring-grafana-alloy`](./terraform-monitoring-grafana-alloy) — Observabilidade com Prometheus remoto via Alloy
 
 ---
+
 ## ⚠️ Configuração do módulo Grafana Alloy
 
 O módulo `terraform-monitoring-grafana-alloy` exige que você forneça manualmente as credenciais da sua stack do Grafana Cloud.
 
 ### Como configurar
 
-1. Edite o arquivo `terraform.tfvars` com os valores da sua conta Grafana:
+1. Acesse o Grafana Cloud em:
+   ```
+   https://fiapmicroservices.grafana.net
+   ```
+
+2. Vá em:  
+   `Connections` → `Add new connection` → `Hosted Prometheus metrics`  
+   > (Não use o menu de API Keys tradicional)
+
+3. Clique em **"Create a new token"** e defina um nome. Isso irá gerar:
+   - Seu **username**
+   - Seu **token de API (password)** com escopo `set:alloy-data-write`
+
+4. Edite o arquivo `terraform.tfvars` com os valores recebidos:
 
 ```hcl
-grafana_username         = "<seu ID de usuário no Grafana Cloud>"
-grafana_password         = "<token de API gerado na stack Grafana Cloud>"
-grafana_remote_write_url = "<URL do Remote Write da stack>"
+grafana_username         = "<seu ID numérico de usuário no Grafana Cloud>"
+grafana_password         = "<token gerado com set:alloy-data-write>"
+grafana_remote_write_url = "https://<sua-stack>.grafana.net/api/prom/push"
 ```
 
 > 🔐 Esses valores **não devem ser versionados no Git**. O arquivo `terraform.tfvars` já está no `.gitignore`.
 
-Você pode obter o token e a URL acessando:  
-**[https://grafana.com/orgs/fiapmicroservices/](https://grafana.com/orgs/fiapmicroservices/)** → sua stack → ⚙️ Settings → **Prometheus → Remote write**
-
-
 ---
+
 ## 🔐 Segurança
 
 Este projeto utiliza o padrão **GitHub OIDC + IAM Roles** para evitar o uso de credenciais estáticas. Nenhuma `AWS_SECRET_ACCESS_KEY` é armazenada em pipelines.
@@ -106,11 +117,13 @@ Não é necessário criar um módulo específico de observabilidade por serviço
 
 A stack `terraform-monitoring-grafana-alloy` já contempla a coleta de métricas de todos os serviços via ALB.
 
-Basta garantir que sua aplicação:
+Para isso, basta garantir que sua aplicação:
 
-- Exponha a rota `/metrics` compatível com Prometheus
-- Esteja registrada no ALB (via `terraform-alb`)
-- Use métricas com nomes e labels consistentes (por exemplo, `http_request_duration_seconds` com labels `method`, `route`, `status_code`)
+- Exponha uma rota de métricas compatível com Prometheus  
+  > Exemplo: `/auth-metrics`, `/pedido-metrics`, `/cliente-metrics`, etc.
+- Esteja registrada no ALB (via `terraform-alb`) com path correspondente
+- Use métricas com nomes e labels consistentes  
+  (ex: `http_request_duration_seconds` com labels `method`, `route`, `status_code`)
 
 ---
 
