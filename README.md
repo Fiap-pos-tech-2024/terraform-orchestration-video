@@ -120,7 +120,7 @@ A stack `terraform-monitoring-grafana-alloy` já contempla a coleta de métricas
 Para isso, basta garantir que sua aplicação:
 
 - Exponha uma rota de métricas compatível com Prometheus  
-  > Exemplo: `/auth-metrics`, `/pedido-metrics`, `/cliente-metrics`, etc.
+  > Exemplo: `/auth-metrics`, `/upload-metrics`, `/notification-metrics`, etc.
 - Esteja registrada no ALB (via `terraform-alb`) com path correspondente
 - Use métricas com nomes e labels consistentes  
   (ex: `http_request_duration_seconds` com labels `method`, `route`, `status_code`)
