@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-019112154159"
     key    = "video-auth-service/terraform.tfstate"
     region = "us-east-1"
     encrypt = true
@@ -16,7 +16,7 @@ provider "aws" {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-019112154159"
     key    = "network/terraform.tfstate"
     region = "us-east-1"
   }
@@ -25,7 +25,7 @@ data "terraform_remote_state" "network" {
 data "terraform_remote_state" "cognito" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-019112154159"
     key    = "cognito/terraform.tfstate"
     region = "us-east-1"
   }
@@ -34,7 +34,7 @@ data "terraform_remote_state" "cognito" {
 data "terraform_remote_state" "db" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-019112154159"
     key    = "user-db/terraform.tfstate"
     region = "us-east-1"
   }
@@ -43,7 +43,7 @@ data "terraform_remote_state" "db" {
 data "terraform_remote_state" "alb" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-019112154159"
     key    = "alb/terraform.tfstate"
     region = "us-east-1"
   }
@@ -90,7 +90,7 @@ resource "aws_ecs_task_definition" "this" {
   container_definitions = jsonencode([
     {
       name  = "video-auth-service"
-      image = "816069165502.dkr.ecr.us-east-1.amazonaws.com/video-auth-service:latest"
+      image = "019112154159.dkr.ecr.us-east-1.amazonaws.com/video-auth-service:latest"
       portMappings = [
         {
           containerPort = 3000

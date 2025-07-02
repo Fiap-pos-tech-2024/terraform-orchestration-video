@@ -77,7 +77,7 @@ terraform apply
 ## 📄 terraform.tfvars (exemplo)
 
 ```hcl
-execution_role_arn = "arn:aws:iam::816069165502:role/gh-actions-video-auth-service-role"
+execution_role_arn = "arn:aws:iam::019112154159:role/gh-actions-video-auth-service-role"
 region             = "us-east-1"
 ```
 
