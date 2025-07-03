@@ -7,6 +7,12 @@ terraform {
   }
 }
 
+variable "account_id" {
+  description = "ID da conta AWS"
+  type        = string
+  default     = "816069165502"  
+}
+
 variable "aws_region" {
   description = "Região AWS"
   type        = string
@@ -34,7 +40,7 @@ variable "db_username" {
 variable "db_name" {
   description = "Nome do schema"
   type        = string
-  default     = "videodb"
+  default     = "authdb"
 }
 
 variable "db_password" {
