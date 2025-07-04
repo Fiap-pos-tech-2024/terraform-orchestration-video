@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-states-019112154159"
+    bucket = "terraform-states-816069165502"
     key    = "monitoring-grafana-alloy/terraform.tfstate"
     region = "us-east-1"
     encrypt = true
@@ -14,7 +14,7 @@ provider "aws" {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-019112154159"
+    bucket = "terraform-states-816069165502"
     key    = "network/terraform.tfstate"
     region = "us-east-1"
   }
@@ -23,7 +23,7 @@ data "terraform_remote_state" "network" {
 data "terraform_remote_state" "video_auth_service" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-019112154159"
+    bucket = "terraform-states-816069165502"
     key    = "video-auth-service/terraform.tfstate"
     region = "us-east-1"
   }
@@ -32,7 +32,7 @@ data "terraform_remote_state" "video_auth_service" {
 data "terraform_remote_state" "alb" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-019112154159"
+    bucket = "terraform-states-816069165502"
     key    = "alb/terraform.tfstate"
     region = "us-east-1"
   }
@@ -78,7 +78,7 @@ resource "aws_ecs_task_definition" "grafana_alloy" {
   container_definitions = jsonencode([
     {
       name  = "grafana-alloy"
-      image = "019112154159.dkr.ecr.us-east-1.amazonaws.com/grafana-alloy:latest"
+      image = "816069165502.dkr.ecr.us-east-1.amazonaws.com/grafana-alloy:latest"
       portMappings = [
         {
           containerPort = 12345

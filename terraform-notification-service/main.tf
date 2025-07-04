@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-states-019112154159"
+    bucket = "terraform-states-816069165502"
     key    = "notification-service/terraform.tfstate"
     region = "us-east-1"
     encrypt = true
@@ -16,7 +16,7 @@ provider "aws" {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-019112154159"
+    bucket = "terraform-states-816069165502"
     key    = "network/terraform.tfstate"
     region = "us-east-1"
   }
@@ -25,7 +25,7 @@ data "terraform_remote_state" "network" {
 data "terraform_remote_state" "alb" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-019112154159"
+    bucket = "terraform-states-816069165502"
     key    = "alb/terraform.tfstate"
     region = "us-east-1"
   }
@@ -34,7 +34,7 @@ data "terraform_remote_state" "alb" {
 data "terraform_remote_state" "video_auth_service" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-019112154159"
+    bucket = "terraform-states-816069165502"
     key    = "video-auth-service/terraform.tfstate"
     region = "us-east-1"
   }
@@ -77,7 +77,7 @@ resource "aws_ecs_task_definition" "notification_service" {
   container_definitions = jsonencode([
     {
       name  = "notification-service"
-      image = "019112154159.dkr.ecr.us-east-1.amazonaws.com/notification-service:latest"
+      image = "816069165502.dkr.ecr.us-east-1.amazonaws.com/notification-service:latest"
       portMappings = [
         {
           containerPort = 3001
@@ -119,7 +119,7 @@ resource "aws_ecs_service" "notification_service" {
   }
 
   load_balancer {
-    target_group_arn = "arn:aws:elasticloadbalancing:us-east-1:019112154159:targetgroup/notification-tg-v2/c46a86aeae3a6a45"
+    target_group_arn = "arn:aws:elasticloadbalancing:us-east-1:816069165502:targetgroup/notification-tg-v2/c46a86aeae3a6a45"
     container_name   = "notification-service"
     container_port   = 3001
   }

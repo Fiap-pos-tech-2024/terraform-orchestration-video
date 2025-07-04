@@ -48,10 +48,10 @@ variable "services" {
 ### Em `terraform.tfvars`:
 
 ```hcl
-aws_account_id = "019112154159"
+aws_account_id = "816069165502"
 ```
 
-> ⚠️ **Atenção:** Substitua o valor acima pelo **seu próprio `aws_account_id`**. Não utilize o ID da conta de exemplo (`019112154159`) para evitar conflitos e problemas de deploy.
+> ⚠️ **Atenção:** Substitua o valor acima pelo **seu próprio `aws_account_id`**. Não utilize o ID da conta de exemplo (`816069165502`) para evitar conflitos e problemas de deploy.
 
 ---
 
