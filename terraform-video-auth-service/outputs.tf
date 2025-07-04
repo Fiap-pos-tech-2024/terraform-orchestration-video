@@ -5,7 +5,7 @@ output "video_auth_service_url" {
 
 output "ecs_task_execution_role_arn" {
   description = "ARN da role usada pelas ECS tasks"
-  value       = aws_iam_role.ecs_task_execution_role.arn
+  value       = var.execution_role_arn
 }
 
 output "ecs_cluster_id" {

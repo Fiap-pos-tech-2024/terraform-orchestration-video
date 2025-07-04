@@ -1,3 +1,5 @@
+# Comentando os recursos IAM para usar o LabRole da AWS Academy
+/*
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "ecsTaskExecutionRole"
 
@@ -64,3 +66,4 @@ resource "aws_iam_role_policy" "ecs_logs_alloy_policy" {
     ]
   })
 }
+*/

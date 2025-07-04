@@ -6,6 +6,7 @@ echo "⚠️ Iniciando destruição da infraestrutura (ordem reversa)..."
 
 MODULES=(
   terraform-monitoring-grafana-alloy
+  terraform-notification-service
   terraform-video-auth-service
   terraform-github-oidc
   terraform-alb

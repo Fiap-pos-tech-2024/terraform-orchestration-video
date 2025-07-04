@@ -21,6 +21,7 @@ MODULES=(
   terraform-alb
   terraform-github-oidc
   terraform-video-auth-service
+  terraform-notification-service
   terraform-monitoring-grafana-alloy
 )
 

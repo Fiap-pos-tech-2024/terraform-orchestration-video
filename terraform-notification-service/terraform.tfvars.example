@@ -1,0 +1,9 @@
+# Configurações SMTP para envio de e-mails
+smtp_user   = "seu-email@gmail.com"
+smtp_pass   = "sua-senha-de-app"  # Use App Password para Gmail
+from_email  = "seu-email@gmail.com"
+from_name   = "Video Processing System"
+
+# Opcional - configurações SMTP personalizadas
+# smtp_host = "smtp.gmail.com"
+# smtp_port = 587
