@@ -8,6 +8,11 @@ output "video_auth_service_target_group_arn" {
   value       = aws_lb_target_group.video_auth_service.arn
 }
 
+output "notification_service_target_group_arn" {
+  description = "ARN do Target Group do notification-service"
+  value       = aws_lb_target_group.notification_service.arn
+}
+
 output "alb_security_group_id" {
   description = "Security group do ALB (usado no ECS para liberar entrada)"
   value       = aws_security_group.alb_sg.id
