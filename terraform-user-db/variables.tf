@@ -34,7 +34,7 @@ variable "db_username" {
 variable "db_name" {
   description = "Nome do schema"
   type        = string
-  default     = "videodb"
+  default     = "authdb"
 }
 
 variable "db_password" {
