@@ -26,6 +26,9 @@ variable "services" {
     # },
     video-auth-service = {
       repository = "Fiap-pos-tech-2024/video-auth-service"
+    },
+    notification-service = {
+      repository = "Fiap-pos-tech-2024/hacka-app-video-notification"
     }
   }
 }
