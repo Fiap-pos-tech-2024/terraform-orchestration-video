@@ -17,3 +17,8 @@ output "alb_listener_arn" {
   description = "ARN do listener HTTP (porta 80) do ALB"
   value       = aws_lb_listener.http.arn
 }
+
+output "notification_service_target_group_arn" {
+  description = "ARN do Target Group do notification-service"
+  value       = aws_lb_target_group.notification_service.arn
+}
