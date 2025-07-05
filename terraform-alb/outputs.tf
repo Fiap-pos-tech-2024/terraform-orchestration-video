@@ -22,3 +22,8 @@ output "notification_service_target_group_arn" {
   description = "ARN do Target Group do notification-service"
   value       = aws_lb_target_group.notification_service.arn
 }
+
+output "video_processor_target_group_arn" {
+  description = "ARN do Target Group do video-processor"
+  value       = aws_lb_target_group.video_processor.arn
+}
