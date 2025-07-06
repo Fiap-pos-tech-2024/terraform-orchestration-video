@@ -37,7 +37,7 @@ resource "aws_security_group" "video_db_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [data.terraform_remote_state.network.outputs.vpc_cidr]
   }
 
   egress {
@@ -57,7 +57,7 @@ resource "aws_db_instance" "video" {
   allocated_storage      = var.allocated_storage
   username               = var.db_username
   password               = var.db_password
-  db_name                = var.db_name
+  db_name                = var.db_video_name
 
   db_subnet_group_name   = aws_db_subnet_group.video.name
   vpc_security_group_ids = [aws_security_group.video_db_sg.id]

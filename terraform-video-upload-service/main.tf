@@ -49,6 +49,14 @@ resource "aws_cloudwatch_log_group" "video_upload_service" {
   retention_in_days = 7
 }
 
+data "aws_sqs_queue" "uploaded_video_queue" {
+  name = "uploaded-video-queue"
+}
+
+data "aws_sqs_queue" "updated_video_processing_queue" {
+  name = "updated-video-processing-queue"
+}
+
 resource "aws_security_group" "ecs_sg" {
   name        = "video-upload-service-ecs-sg"
   description = "Permite acesso HTTP vindo do ALB"
@@ -75,8 +83,8 @@ resource "aws_ecs_task_definition" "this" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
-  execution_role_arn       = "arn:aws:iam::835311494914:role/LabRole"
-  task_role_arn            = "arn:aws:iam::835311494914:role/LabRole"
+  execution_role_arn       = var.execution_role_arn
+  task_role_arn            = var.execution_role_arn
 
   container_definitions = jsonencode([
     {
@@ -93,9 +101,9 @@ resource "aws_ecs_task_definition" "this" {
         { name = "REDIS_HOST", value = "localhost" },
         { name = "REDIS_PORT", value = "6379" },
         { name = "AWS_BUCKET_NAME", value = var.AWS_BUCKET_NAME },
-        { name = "UPLOADED_VIDEO_QUEUE_URL", value = var.UPLOADED_VIDEO_QUEUE_URL },
-        { name = "UPDATED_VIDEO_PROCESSING_QUEUE_URL", value = var.UPDATED_VIDEO_PROCESSING_QUEUE_URL },
-        { name = "BASE_PATH_AUTH", value = "http://${data.terraform_remote_state.alb.outputs.alb_dns_name}" }
+        { name = "UPLOADED_VIDEO_QUEUE_URL", value = data.aws_sqs_queue.uploaded_video_queue.url },
+        { name = "UPDATED_VIDEO_PROCESSING_QUEUE_URL", value = data.aws_sqs_queue.updated_video_processing_queue.url },
+        { name = "BASE_PATH_AUTH", value = "http://${data.terraform_remote_state.alb.outputs.alb_dns_name}/api/auth" }
       ],
       logConfiguration = {
         logDriver = "awslogs"
@@ -128,7 +136,7 @@ resource "aws_ecs_task_definition" "this" {
 
 resource "aws_ecs_service" "this" {
   name            = "video-upload-service"
-  cluster         = aws_ecs_cluster.this.id
+  cluster         = data.aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this.arn
   launch_type     = "FARGATE"
   desired_count   = 1
@@ -145,5 +153,5 @@ resource "aws_ecs_service" "this" {
     container_port   = 3003
   }
 
-  depends_on = [aws_ecs_task_definition.this, aws_ecs_cluster.this]
+  depends_on = [aws_ecs_task_definition.this, data.aws_ecs_cluster.this]
 }

@@ -37,7 +37,7 @@ variable "db_username" {
   default     = "fiap"
 }
 
-variable "db_name" {
+variable "db_video_name" {
   description = "Nome do schema"
   type        = string
   default     = "videodb"

@@ -1,12 +1,12 @@
-variable "execution_role_arn" {
-  type = string
-  default = "arn:aws:iam::835311494914:role/LabRole"
-}
-
 variable "account_id" {
   description = "ID da conta AWS"
   type        = string
-  default     = "816069165502"  
+  default     = "835311494914"  
+}
+
+variable "execution_role_arn" {
+  type = string
+  default = "arn:aws:iam::835311494914:role/LabRole"
 }
 
 variable "AWS_BUCKET_NAME" {
