@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket  = "terraform-states-816069165502"
+    bucket  = "terraform-states-497986631333"
     key     = "video-processor/terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
@@ -16,7 +16,7 @@ provider "aws" {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-497986631333"
     key    = "network/terraform.tfstate"
     region = "us-east-1"
   }
@@ -25,7 +25,7 @@ data "terraform_remote_state" "network" {
 data "terraform_remote_state" "alb" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-497986631333"
     key    = "alb/terraform.tfstate"
     region = "us-east-1"
   }
@@ -34,7 +34,7 @@ data "terraform_remote_state" "alb" {
 data "terraform_remote_state" "video_auth_service" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-497986631333"
     key    = "video-auth-service/terraform.tfstate"
     region = "us-east-1"
   }
@@ -225,7 +225,7 @@ resource "aws_ecs_task_definition" "this" {
   container_definitions = jsonencode([
     {
       name  = "video-processor"
-      image = "maickway/video-processor:latest"
+      image = "maickway/video-processor:v2"
       portMappings = [
         {
           containerPort = 3000
