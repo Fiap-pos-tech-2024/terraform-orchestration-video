@@ -12,9 +12,9 @@ find . -type f -name ".terraform.lock.hcl" -delete
 
 # Lista de diretórios dos módulos em ordem
 MODULES=(
-  # terraform-backend
+  terraform-backend
   terraform-network
-  # terraform-cognito
+  terraform-cognito
   terraform-user-db
   terraform-alb
   terraform-github-oidc
