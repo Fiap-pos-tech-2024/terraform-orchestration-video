@@ -12,7 +12,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "fiap-video-upload-bucket"
+  bucket = "fiap-video-bucket"
 
   lifecycle {
     prevent_destroy = true

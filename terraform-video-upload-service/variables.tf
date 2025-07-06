@@ -10,7 +10,7 @@ variable "execution_role_arn" {
 }
 
 variable "aws_bucket_name" {
-  description = "Nome do bucket S3 para upload de vídeos"
+  description = "Nome do bucket S3 para armazenamento de vídeos e zips"
   type        = string
-  default     = "fiap-video-upload-bucket"
+  default     = "fiap-video-bucket"
 }
