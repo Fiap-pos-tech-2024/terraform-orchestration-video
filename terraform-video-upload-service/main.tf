@@ -100,7 +100,7 @@ resource "aws_ecs_task_definition" "this" {
         { name = "MYSQL_URL", value = "mysql://${data.terraform_remote_state.db.outputs.username}:fiap1234@${data.terraform_remote_state.db.outputs.endpoint}/${data.terraform_remote_state.db.outputs.dbname}" },
         { name = "REDIS_HOST", value = "localhost" },
         { name = "REDIS_PORT", value = "6379" },
-        { name = "AWS_BUCKET_NAME", value = var.AWS_BUCKET_NAME },
+        { name = "AWS_BUCKET_NAME", value = var.aws_bucket_name },
         { name = "UPLOADED_VIDEO_QUEUE_URL", value = data.aws_sqs_queue.uploaded_video_queue.url },
         { name = "UPDATED_VIDEO_PROCESSING_QUEUE_URL", value = data.aws_sqs_queue.updated_video_processing_queue.url },
         { name = "BASE_PATH_AUTH", value = "http://${data.terraform_remote_state.alb.outputs.alb_dns_name}/api/auth" }
