@@ -17,11 +17,15 @@ MODULES=(
   terraform-backend
   terraform-network
   terraform-cognito
+  terraform-video-queues
+  terraform-video-bucket
   terraform-user-db
+  terraform-video-db
   terraform-alb
   terraform-github-oidc
   terraform-video-auth-service
   terraform-notification-service
+  terraform-video-upload-service
   terraform-monitoring-grafana-alloy
 )
 
