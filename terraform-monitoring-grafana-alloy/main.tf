@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "monitoring-grafana-alloy/terraform.tfstate"
     region = "us-east-1"
     encrypt = true
@@ -14,7 +14,7 @@ provider "aws" {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "network/terraform.tfstate"
     region = "us-east-1"
   }
@@ -23,7 +23,7 @@ data "terraform_remote_state" "network" {
 data "terraform_remote_state" "video_auth_service" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "video-auth-service/terraform.tfstate"
     region = "us-east-1"
   }
@@ -32,7 +32,7 @@ data "terraform_remote_state" "video_auth_service" {
 data "terraform_remote_state" "alb" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "alb/terraform.tfstate"
     region = "us-east-1"
   }
@@ -91,7 +91,9 @@ resource "aws_ecs_task_definition" "grafana_alloy" {
         { name = "GRAFANA_REMOTE_WRITE_URL",       value = var.grafana_remote_write_url },
         { name = "GRAFANA_USERNAME",               value = var.grafana_username },
         { name = "GRAFANA_PASSWORD",               value = var.grafana_password },
-        { name = "VIDEO_AUTH_SERVICE_ALB_DNS",     value = data.terraform_remote_state.alb.outputs.alb_dns_name } 
+        { name = "VIDEO_AUTH_SERVICE_ALB_DNS",     value = data.terraform_remote_state.alb.outputs.alb_dns_name },
+        { name = "NOTIFICATION_SERVICE_ALB_DNS",   value = data.terraform_remote_state.alb.outputs.alb_dns_name }
+
       ],
 
       logConfiguration = {
