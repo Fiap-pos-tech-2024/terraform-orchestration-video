@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "cognito/terraform.tfstate"
     region = "us-east-1"
     encrypt = true

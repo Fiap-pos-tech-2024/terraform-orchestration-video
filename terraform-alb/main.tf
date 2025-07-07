@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "alb/terraform.tfstate"
     region = "us-east-1"
     encrypt = true
@@ -14,7 +14,8 @@ provider "aws" {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
+
     key    = "network/terraform.tfstate"
     region = "us-east-1"
   }
@@ -135,10 +136,11 @@ resource "aws_lb_listener_rule" "notification_service_rule" {
 
   condition {
     path_pattern {
-      values = ["/notification-docs*", "/api/notify*", "/api/notifications/health"]
+      values = ["/notification-docs*", "/api/notify*", "/api/notifications/health", "/notification-metrics"]
     }
   }
 }
+
 
 # Target group para video-processor
 resource "aws_lb_target_group" "video_processor" {
@@ -211,3 +213,4 @@ resource "aws_lb_listener_rule" "video_upload_service_rule" {
     }
   }
 }
+

@@ -8,10 +8,12 @@ output "video_auth_service_target_group_arn" {
   value       = aws_lb_target_group.video_auth_service.arn
 }
 
+
 output "video_upload_service_target_group_arn" {
   description = "ARN do Target Group do video-upload-service"
   value       = aws_lb_target_group.video_upload_service.arn
 }
+
 
 output "alb_security_group_id" {
   description = "Security group do ALB (usado no ECS para liberar entrada)"
@@ -32,3 +34,4 @@ output "video_processor_target_group_arn" {
   description = "ARN do Target Group do video-processor"
   value       = aws_lb_target_group.video_processor.arn
 }
+

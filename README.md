@@ -48,6 +48,15 @@ Esse script executa:
 
 > Útil para configurar o ambiente do zero ou atualizar toda a infraestrutura de forma segura e padronizada.
 
+
+Esse script executa:
+
+- Limpeza de arquivos temporários de Terraform
+- `terraform init` + `apply` para cada módulo na ordem correta
+- Provisionamento completo do ambiente com um único comando
+
+> Útil para configurar o ambiente do zero ou atualizar toda a infraestrutura de forma segura e padronizada.
+
 ---
 
 ### 🗑️ Destruição completa
@@ -116,6 +125,7 @@ grafana_remote_write_url = "https://<sua-stack>.grafana.net/api/prom/push"
 Este projeto utiliza o padrão **GitHub OIDC + IAM Roles** para evitar o uso de credenciais estáticas. Nenhuma `AWS_SECRET_ACCESS_KEY` é armazenada em pipelines.
 
 ---
+
 
 ## 🧪 Ambientes e Observabilidade
 

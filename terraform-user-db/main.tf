@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "user-db/terraform.tfstate"
     region = "us-east-1"
     encrypt = true
@@ -10,7 +10,7 @@ terraform {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "network/terraform.tfstate"
     region = "us-east-1"
   }

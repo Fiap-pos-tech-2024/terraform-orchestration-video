@@ -23,7 +23,7 @@ MODULES=(
 for dir in "${MODULES[@]}"; do
   echo "🔥 Destruindo $dir..."
   cd "$dir"
-  terraform destroy -auto-approve
+  terraform destroy -auto-approve || echo "⚠️ Falha ao destruir $dir — verifique manualmente."
   cd ..
 done
 
