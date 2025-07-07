@@ -140,6 +140,42 @@ resource "aws_lb_listener_rule" "notification_service_rule" {
   }
 }
 
+# Target group para video-processor
+resource "aws_lb_target_group" "video_processor" {
+  name        = "video-processor-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = data.terraform_remote_state.network.outputs.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    matcher             = "200,404"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+}
+
+# Listener rule para video-processor
+resource "aws_lb_listener_rule" "video_processor_rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 30
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.video_processor.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/processor*", "/api/video*", "/video-docs*"]
+    }
+  }
+}
+
 # Target group para video-upload-service
 resource "aws_lb_target_group" "video_upload_service" {
   name        = "video-upload-tg"
@@ -159,10 +195,10 @@ resource "aws_lb_target_group" "video_upload_service" {
   }
 }
 
-# Regra de roteamento para video-upload-service
+# Listener rule para video-upload-service
 resource "aws_lb_listener_rule" "video_upload_service_rule" {
   listener_arn = aws_lb_listener.http.arn
-  priority     = 30
+  priority     = 40
 
   action {
     type             = "forward"
