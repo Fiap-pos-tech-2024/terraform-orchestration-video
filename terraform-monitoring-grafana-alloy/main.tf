@@ -93,7 +93,6 @@ resource "aws_ecs_task_definition" "grafana_alloy" {
         { name = "GRAFANA_PASSWORD",               value = var.grafana_password },
         { name = "VIDEO_AUTH_SERVICE_ALB_DNS",     value = data.terraform_remote_state.alb.outputs.alb_dns_name },
         { name = "NOTIFICATION_SERVICE_ALB_DNS",   value = data.terraform_remote_state.alb.outputs.alb_dns_name }
-
       ],
 
       logConfiguration = {

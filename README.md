@@ -15,6 +15,8 @@ terraform-orchestration-video/
 ├── terraform-alb/                   # Application Load Balancer compartilhado
 ├── terraform-github-oidc/           # Integração com GitHub Actions via OIDC
 ├── terraform-video-auth-service/    # ECS Fargate, Service, Task, SG e ECR do microsserviço
+├── terraform-notification-service/  # Serviço de notificações via email
+├── terraform-video-processor/       # Serviço de processamento de vídeos (S3, SQS, ECS)
 ├── terraform-monitoring-grafana-alloy/ # Observabilidade com Alloy + Prometheus remoto
 ```
 
@@ -28,9 +30,24 @@ Este repositório já inclui dois scripts para facilitar a aplicação e destrui
 
 ### ✅ Aplicação completa
 
+#### Linux/Mac:
 ```bash
 ./apply-all.sh
 ```
+
+#### Windows (PowerShell):
+```powershell
+.\apply-all.ps1
+```
+
+Esse script executa:
+
+- Limpeza de arquivos temporários de Terraform
+- `terraform init` + `apply` para cada módulo na ordem correta
+- Provisionamento completo do ambiente com um único comando
+
+> Útil para configurar o ambiente do zero ou atualizar toda a infraestrutura de forma segura e padronizada.
+
 
 Esse script executa:
 
@@ -44,8 +61,14 @@ Esse script executa:
 
 ### 🗑️ Destruição completa
 
+#### Linux/Mac:
 ```bash
 ./destroy-all.sh
+```
+
+#### Windows (PowerShell):
+```powershell
+.\destroy-all.ps1
 ```
 
 Esse script executa:
@@ -102,6 +125,7 @@ grafana_remote_write_url = "https://<sua-stack>.grafana.net/api/prom/push"
 Este projeto utiliza o padrão **GitHub OIDC + IAM Roles** para evitar o uso de credenciais estáticas. Nenhuma `AWS_SECRET_ACCESS_KEY` é armazenada em pipelines.
 
 ---
+
 
 ## 🧪 Ambientes e Observabilidade
 

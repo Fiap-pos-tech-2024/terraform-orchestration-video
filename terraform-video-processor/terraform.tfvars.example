@@ -1,0 +1,8 @@
+# Este módulo não requer variáveis adicionais
+# Todas as configurações são obtidas via remote state dos módulos dependentes:
+# 
+# - terraform-network: VPC, subnets
+# - terraform-alb: Load balancer, target groups
+# - terraform-video-auth-service: ECS cluster, IAM roles
+#
+# Para personalizar configurações, edite diretamente o arquivo main.tf
