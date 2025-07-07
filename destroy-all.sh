@@ -8,10 +8,13 @@ MODULES=(
   terraform-monitoring-grafana-alloy
   terraform-video-processor
   terraform-notification-service
+  terraform-video-upload-service
   terraform-video-auth-service
   terraform-github-oidc
   terraform-alb
   terraform-user-db
+  terraform-video-db
+  terraform-video-queues
   terraform-cognito
   terraform-network
   terraform-backend
