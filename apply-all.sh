@@ -12,7 +12,7 @@ find . -type f -name ".terraform.lock.hcl" -delete
 
 # Ordem de execução
 MODULES=(
-  # terraform-backend
+  terraform-backend
   terraform-network
   terraform-cognito
   terraform-video-queues
