@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "bucket-video-storage/terraform.tfstate"
     region = "us-east-1"
     encrypt = true
@@ -12,7 +12,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "fiap-video-bucket"
+  bucket = "fiap-video-bucket-20250706"
 
   lifecycle {
     prevent_destroy = true

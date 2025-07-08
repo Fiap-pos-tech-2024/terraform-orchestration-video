@@ -80,7 +80,9 @@ resource "aws_ecs_task_definition" "this" {
         { name = "SMTP_PORT", value = var.smtp_port },
         { name = "SMTP_USER", value = var.smtp_user },
         { name = "SMTP_PASS", value = var.smtp_pass },
-        { name = "NODE_ENV", value = "production" }
+        { name = "NODE_ENV", value = "production" },
+        { name = "ALB_DNS", value = data.terraform_remote_state.alb.outputs.alb_dns_name },
+        { name = "BASE_PATH_AUTH", value = "http://${data.terraform_remote_state.alb.outputs.alb_dns_name}/api/auth" }
       ],
       logConfiguration = {
         logDriver = "awslogs",
