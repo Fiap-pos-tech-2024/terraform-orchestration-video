@@ -23,7 +23,7 @@ MODULES=(
   terraform-github-oidc
   terraform-video-auth-service
   terraform-notification-service
-  terraform-video-processor
+  terraform-video-processor-service
   terraform-video-upload-service
   terraform-monitoring-grafana-alloy
 )

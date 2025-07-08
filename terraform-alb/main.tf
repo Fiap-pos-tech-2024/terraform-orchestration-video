@@ -209,7 +209,7 @@ resource "aws_lb_listener_rule" "video_upload_service_rule" {
 
   condition {
     path_pattern {
-      values = ["/video-upload-app/*"]
+      values = ["/video-upload-app/*", "/upload-metrics"]
     }
   }
 }

@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-states-fiap-20250706"
-    key    = "monitoring-grafana-alloy/terraform.tfstate"
-    region = "us-east-1"
+    bucket  = "terraform-states-fiap-20250706"
+    key     = "monitoring-grafana-alloy/terraform.tfstate"
+    region  = "us-east-1"
     encrypt = true
   }
 }
@@ -86,13 +86,14 @@ resource "aws_ecs_task_definition" "grafana_alloy" {
         }
       ],
       essential = true,
-      command = ["run", "/etc/alloy/alloy-config.river"],
-        environment = [
-        { name = "GRAFANA_REMOTE_WRITE_URL",       value = var.grafana_remote_write_url },
-        { name = "GRAFANA_USERNAME",               value = var.grafana_username },
-        { name = "GRAFANA_PASSWORD",               value = var.grafana_password },
-        { name = "VIDEO_AUTH_SERVICE_ALB_DNS",     value = data.terraform_remote_state.alb.outputs.alb_dns_name },
-        { name = "NOTIFICATION_SERVICE_ALB_DNS",   value = data.terraform_remote_state.alb.outputs.alb_dns_name }
+      command   = ["run", "/etc/alloy/alloy-config.river"],
+      environment = [
+        { name = "GRAFANA_REMOTE_WRITE_URL", value = var.grafana_remote_write_url },
+        { name = "GRAFANA_USERNAME", value = var.grafana_username },
+        { name = "GRAFANA_PASSWORD", value = var.grafana_password },
+        { name = "VIDEO_AUTH_SERVICE_ALB_DNS", value = data.terraform_remote_state.alb.outputs.alb_dns_name },
+        { name = "NOTIFICATION_SERVICE_ALB_DNS", value = data.terraform_remote_state.alb.outputs.alb_dns_name },
+        { name = "UPLOAD_SERVICE_ALB_DNS", value = data.terraform_remote_state.alb.outputs.alb_dns_name }
       ],
 
       logConfiguration = {
@@ -117,8 +118,8 @@ resource "aws_ecs_service" "grafana_alloy" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = data.terraform_remote_state.network.outputs.public_subnet_ids
-    security_groups = [aws_security_group.alloy_sg.id]
+    subnets          = data.terraform_remote_state.network.outputs.public_subnet_ids
+    security_groups  = [aws_security_group.alloy_sg.id]
     assign_public_ip = true
   }
 

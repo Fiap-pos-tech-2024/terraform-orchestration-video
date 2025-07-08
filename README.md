@@ -16,7 +16,7 @@ terraform-orchestration-video/
 ├── terraform-github-oidc/           # Integração com GitHub Actions via OIDC
 ├── terraform-video-auth-service/    # ECS Fargate, Service, Task, SG e ECR do microsserviço
 ├── terraform-notification-service/  # Serviço de notificações via email
-├── terraform-video-processor/       # Serviço de processamento de vídeos (S3, SQS, ECS)
+├── terraform-video-processor-service/       # Serviço de processamento de vídeos (S3, SQS, ECS)
 ├── terraform-monitoring-grafana-alloy/ # Observabilidade com Alloy + Prometheus remoto
 ```
 
