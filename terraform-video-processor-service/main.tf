@@ -40,8 +40,23 @@ data "terraform_remote_state" "video_auth_service" {
   }
 }
 
+data "terraform_remote_state" "video_storage" {
+  backend = "s3"
+  config = {
+    bucket = "terraform-states-fiap-20250706"
+    key    = "bucket-video-storage/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
+# === SQS Queues ===
+
 data "aws_sqs_queue" "video_processing_queue" {
   name = "video-processing-queue"
+}
+
+data "aws_sqs_queue" "video_processing_dlq" {
+  name = "video-processing-dlq"
 }
 
 # === IAM Role e Policy para ECS Task ===
@@ -78,8 +93,8 @@ resource "aws_iam_policy" "video_processor_task_policy" {
           "s3:ListBucket"
         ]
         Resource = [
-          aws_s3_bucket.video_processor_storage.arn,
-          "${aws_s3_bucket.video_processor_storage.arn}/*"
+          data.terraform_remote_state.video_storage.outputs.bucket_arn,
+          "${data.terraform_remote_state.video_storage.outputs.bucket_arn}/*"
         ]
       },
       {
@@ -91,8 +106,8 @@ resource "aws_iam_policy" "video_processor_task_policy" {
           "sqs:GetQueueAttributes"
         ]
         Resource = [
-          aws_sqs_queue.video_processing_queue.arn,
-          aws_sqs_queue.video_processing_dlq.arn
+          data.aws_sqs_queue.video_processing_queue.arn,
+          data.aws_sqs_queue.video_processing_dlq.arn
         ]
       }
     ]
@@ -151,8 +166,8 @@ resource "aws_ecs_task_definition" "this" {
   family                   = "video-processor-task"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = 512  # Mais CPU para processamento de vídeo
-  memory                   = 1024 # Mais memória para processamento de vídeo
+  cpu                      = 512
+  memory                   = 1024
   execution_role_arn       = data.terraform_remote_state.video_auth_service.outputs.ecs_task_execution_role_arn
   task_role_arn            = aws_iam_role.video_processor_task_role.arn
 
@@ -168,7 +183,7 @@ resource "aws_ecs_task_definition" "this" {
       environment = [
         { name = "PORT", value = "3000" },
         { name = "AWS_REGION", value = "us-east-1" },
-        { name = "S3_BUCKET", value = var.aws_bucket_name },
+        { name = "S3_BUCKET", value = data.terraform_remote_state.video_storage.outputs.bucket_name },
         { name = "SQS_QUEUE_URL", value = data.aws_sqs_queue.video_processing_queue.url },
         { name = "NODE_ENV", value = "production" }
       ],
