@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket  = "terraform-states-497986631333"
+    bucket  = "terraform-states-816069165502"
     key     = "video-processor/terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
@@ -16,17 +16,8 @@ provider "aws" {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-497986631333"
+    bucket = "terraform-states-816069165502"
     key    = "network/terraform.tfstate"
-    region = "us-east-1"
-  }
-}
-
-data "terraform_remote_state" "alb" {
-  backend = "s3"
-  config = {
-    bucket = "terraform-states-497986631333"
-    key    = "alb/terraform.tfstate"
     region = "us-east-1"
   }
 }
@@ -34,7 +25,7 @@ data "terraform_remote_state" "alb" {
 data "terraform_remote_state" "video_auth_service" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-497986631333"
+    bucket = "terraform-states-816069165502"
     key    = "video-auth-service/terraform.tfstate"
     region = "us-east-1"
   }
@@ -187,16 +178,10 @@ resource "aws_cloudwatch_log_group" "video_processor" {
 
 resource "aws_security_group" "ecs_sg" {
   name        = "video-processor-ecs-sg"
-  description = "Permite acesso HTTP vindo do ALB"
+  description = "Security group para Video Processor (Queue Worker)"
   vpc_id      = data.terraform_remote_state.network.outputs.vpc_id
 
-  ingress {
-    from_port       = 3000
-    to_port         = 3000
-    protocol        = "tcp"
-    security_groups = [data.terraform_remote_state.alb.outputs.alb_security_group_id]
-  }
-
+  # Apenas egress necessário para acessar SQS, S3 e outros serviços AWS
   egress {
     from_port   = 0
     to_port     = 0
@@ -225,14 +210,8 @@ resource "aws_ecs_task_definition" "this" {
   container_definitions = jsonencode([
     {
       name  = "video-processor"
-      image = "maickway/video-processor:v2"
-      portMappings = [
-        {
-          containerPort = 3000
-        }
-      ],
+      image = "816069165502.dkr.ecr.us-east-1.amazonaws.com/hacka-app-processor:latest"
       environment = [
-        { name = "PORT", value = "3000" },
         { name = "AWS_REGION", value = "us-east-1" },
         { name = "S3_BUCKET", value = aws_s3_bucket.video_processor_storage.bucket },
         { name = "SQS_QUEUE_URL", value = aws_sqs_queue.video_processing_queue.url },
@@ -256,7 +235,7 @@ resource "aws_ecs_task_definition" "this" {
   }
 }
 
-# === ECS Service ===
+# === ECS Service (Queue Worker - sem Load Balancer) ===
 
 resource "aws_ecs_service" "this" {
   name            = "video-processor"
@@ -265,16 +244,11 @@ resource "aws_ecs_service" "this" {
   launch_type     = "FARGATE"
   desired_count   = 1
 
+  # Configuração de rede para queue worker (sem ALB)
   network_configuration {
-    subnets          = data.terraform_remote_state.network.outputs.public_subnet_ids
+    subnets          = data.terraform_remote_state.network.outputs.private_subnet_ids
     security_groups  = [aws_security_group.ecs_sg.id]
-    assign_public_ip = true
-  }
-
-  load_balancer {
-    target_group_arn = data.terraform_remote_state.alb.outputs.video_processor_target_group_arn
-    container_name   = "video-processor"
-    container_port   = 3000
+    assign_public_ip = false
   }
 
   depends_on = [aws_ecs_task_definition.this]
