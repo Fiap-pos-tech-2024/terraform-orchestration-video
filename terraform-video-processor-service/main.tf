@@ -40,74 +40,8 @@ data "terraform_remote_state" "video_auth_service" {
   }
 }
 
-# === S3 Bucket para armazenar vídeos e frames ===
-
-resource "aws_s3_bucket" "video_processor_storage" {
-  bucket = "video-processor-storage-${random_string.bucket_suffix.result}"
-
-  tags = {
-    Name        = "Video Processor Storage"
-    Environment = "production"
-    Service     = "video-processor"
-  }
-}
-
-resource "random_string" "bucket_suffix" {
-  length  = 8
-  special = false
-  upper   = false
-}
-
-resource "aws_s3_bucket_versioning" "video_processor_storage" {
-  bucket = aws_s3_bucket.video_processor_storage.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "video_processor_storage" {
-  bucket = aws_s3_bucket.video_processor_storage.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-# === SQS Queues para processamento de vídeos ===
-
-resource "aws_sqs_queue" "video_processing_queue" {
-  name                      = "video-processing-queue"
-  delay_seconds             = 0
-  max_message_size          = 262144
-  message_retention_seconds = 86400
-  receive_wait_time_seconds = 0
-  visibility_timeout_seconds = 300
-
-  tags = {
-    Name        = "Video Processing Queue"
-    Environment = "production"
-    Service     = "video-processor"
-  }
-}
-
-resource "aws_sqs_queue" "video_processing_dlq" {
-  name = "video-processing-dlq"
-
-  tags = {
-    Name        = "Video Processing Dead Letter Queue"
-    Environment = "production"
-    Service     = "video-processor"
-  }
-}
-
-resource "aws_sqs_queue_redrive_policy" "video_processing_queue" {
-  queue_url = aws_sqs_queue.video_processing_queue.id
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.video_processing_dlq.arn
-    maxReceiveCount     = 3
-  })
+data "aws_sqs_queue" "video_processing_queue" {
+  name = "video-processing-queue"
 }
 
 # === IAM Role e Policy para ECS Task ===
@@ -234,8 +168,8 @@ resource "aws_ecs_task_definition" "this" {
       environment = [
         { name = "PORT", value = "3000" },
         { name = "AWS_REGION", value = "us-east-1" },
-        { name = "S3_BUCKET", value = aws_s3_bucket.video_processor_storage.bucket },
-        { name = "SQS_QUEUE_URL", value = aws_sqs_queue.video_processing_queue.url },
+        { name = "S3_BUCKET", value = var.aws_bucket_name },
+        { name = "SQS_QUEUE_URL", value = data.aws_sqs_queue.video_processing_queue.url },
         { name = "NODE_ENV", value = "production" }
       ],
       logConfiguration = {
