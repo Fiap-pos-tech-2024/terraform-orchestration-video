@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "github-oidc/terraform.tfstate"
     region = "us-east-1"
     encrypt = true
@@ -14,7 +14,7 @@ provider "aws" {
 data "terraform_remote_state" "cognito" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "cognito/terraform.tfstate"
     region = "us-east-1"
   }

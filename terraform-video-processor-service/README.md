@@ -64,7 +64,7 @@ Este módulo depende dos seguintes módulos:
 ### Aplicação Individual
 
 ```bash
-cd terraform-video-processor
+cd terraform-video-processor-service
 terraform init
 terraform apply
 ```
@@ -101,7 +101,7 @@ O container receberá as seguintes variáveis:
 ## 🗑️ Destruição
 
 ```bash
-cd terraform-video-processor
+cd terraform-video-processor-service
 terraform destroy
 ```
 

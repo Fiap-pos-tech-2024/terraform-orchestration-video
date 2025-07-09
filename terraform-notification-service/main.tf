@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket  = "terraform-states-816069165502"
+    bucket  = "terraform-states-fiap-20250706"
     key     = "notification-service/terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
@@ -16,7 +16,7 @@ provider "aws" {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "network/terraform.tfstate"
     region = "us-east-1"
   }
@@ -25,7 +25,7 @@ data "terraform_remote_state" "network" {
 data "terraform_remote_state" "alb" {
   backend = "s3"
   config = {
-    bucket = "terraform-states-816069165502"
+    bucket = "terraform-states-fiap-20250706"
     key    = "alb/terraform.tfstate"
     region = "us-east-1"
   }
@@ -80,7 +80,9 @@ resource "aws_ecs_task_definition" "this" {
         { name = "SMTP_PORT", value = var.smtp_port },
         { name = "SMTP_USER", value = var.smtp_user },
         { name = "SMTP_PASS", value = var.smtp_pass },
-        { name = "NODE_ENV", value = "production" }
+        { name = "NODE_ENV", value = "production" },
+        { name = "ALB_DNS", value = data.terraform_remote_state.alb.outputs.alb_dns_name },
+        { name = "BASE_PATH_AUTH", value = "http://${data.terraform_remote_state.alb.outputs.alb_dns_name}/api/auth" }
       ],
       logConfiguration = {
         logDriver = "awslogs",
