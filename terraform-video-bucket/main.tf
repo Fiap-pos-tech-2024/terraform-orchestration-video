@@ -45,19 +45,24 @@ resource "aws_s3_bucket_public_access_block" "terraform_state" {
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_policy" "public_read_videos" {
+resource "aws_s3_bucket_policy" "public_read_files" {
   bucket = aws_s3_bucket.terraform_state.id
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Sid       = "PublicReadForVideos",
+        Sid       = "AllowPublicReadForVideos",
         Effect    = "Allow",
         Principal = "*",
         Action    = "s3:GetObject",
-        Resource  = "arn:aws:s3:::fiap-video-bucket-20250706/videos/*"
+        Resource  = [
+          "arn:aws:s3:::fiap-video-bucket-20250706/videos/*",
+          "arn:aws:s3:::fiap-video-bucket-20250706/outputs/*",
+          "arn:aws:s3:::fiap-video-bucket-20250706/frames_*"
+        ]
       }
     ]
   })
 }
+
