@@ -185,6 +185,8 @@ resource "aws_ecs_task_definition" "this" {
         { name = "AWS_REGION", value = "us-east-1" },
         { name = "S3_BUCKET", value = data.terraform_remote_state.video_storage.outputs.bucket_name },
         { name = "SQS_QUEUE_URL", value = data.aws_sqs_queue.video_processing_queue.url },
+        { name = "BASE_PATH_AUTH", value = "http://${data.terraform_remote_state.alb.outputs.alb_dns_name}/api/auth" },
+        { name = "BASE_PATH_EXTERNAL_API", value = "http://${data.terraform_remote_state.alb.outputs.alb_dns_name}" },
         { name = "NODE_ENV", value = "production" }
       ],
       logConfiguration = {
