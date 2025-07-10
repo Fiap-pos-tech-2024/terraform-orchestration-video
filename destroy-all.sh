@@ -17,6 +17,7 @@ MODULES=(
   terraform-video-queues
   terraform-cognito
   terraform-network
+  terraform-video-bucket
   terraform-backend
 )
 

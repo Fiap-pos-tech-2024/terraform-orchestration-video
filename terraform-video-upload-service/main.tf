@@ -44,11 +44,6 @@ data "aws_ecs_cluster" "this" {
   cluster_name = "microservices-cluster"
 }
 
-resource "aws_cloudwatch_log_group" "video_upload_service" {
-  name              = "/ecs/video-upload-service"
-  retention_in_days = 7
-}
-
 data "aws_sqs_queue" "video_processing_queue" {
   name = "video-processing-queue"
 }
@@ -57,10 +52,28 @@ data "aws_sqs_queue" "updated_video_processing_queue" {
   name = "updated-video-processing-queue"
 }
 
+# === CloudWatch Log Group ===
+
+resource "aws_cloudwatch_log_group" "video_upload_service" {
+  name              = "/ecs/video-upload-service"
+  retention_in_days = 7
+
+  lifecycle {
+    create_before_destroy = true
+    prevent_destroy       = false
+  }
+}
+
+# === Security Group ===
+
 resource "aws_security_group" "ecs_sg" {
   name        = "video-upload-service-ecs-sg"
   description = "Permite acesso HTTP vindo do ALB"
   vpc_id      = data.terraform_remote_state.network.outputs.vpc_id
+
+  lifecycle {
+    ignore_changes = [egress]
+  }
 
   ingress {
     from_port       = 3003
@@ -76,6 +89,8 @@ resource "aws_security_group" "ecs_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+# === Task Definition ===
 
 resource "aws_ecs_task_definition" "this" {
   family                   = "video-upload-service-task"
@@ -133,6 +148,8 @@ resource "aws_ecs_task_definition" "this" {
     }
   ])
 }
+
+# === ECS Service ===
 
 resource "aws_ecs_service" "this" {
   name            = "video-upload-service"
