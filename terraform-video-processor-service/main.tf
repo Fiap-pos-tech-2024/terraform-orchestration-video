@@ -174,7 +174,7 @@ resource "aws_ecs_task_definition" "this" {
   container_definitions = jsonencode([
     {
       name  = "video-processor"
-      image = "maickway/video-processor:v2"
+      image = "816069165502.dkr.ecr.us-east-1.amazonaws.com/video-processor:latest"
       portMappings = [
         {
           containerPort = 3000

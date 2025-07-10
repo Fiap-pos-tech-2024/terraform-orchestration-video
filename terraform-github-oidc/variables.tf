@@ -32,6 +32,9 @@ variable "services" {
     },
     video-upload-service = {
       repository = "Fiap-pos-tech-2024/hacka-app-video-upload"
+    },
+    video-processor-service = {
+      repository = "Fiap-pos-tech-2024/hacka-app-video-processor"
     }
   }
 }
