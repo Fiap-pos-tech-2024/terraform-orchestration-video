@@ -52,17 +52,19 @@ resource "aws_s3_bucket_policy" "public_read_files" {
     Version = "2012-10-17",
     Statement = [
       {
-        Sid       = "AllowPublicReadForVideos",
+        Sid       = "AllowPublicReadForProcessedFiles",
         Effect    = "Allow",
         Principal = "*",
         Action    = "s3:GetObject",
         Resource  = [
           "arn:aws:s3:::fiap-video-bucket-20250706/videos/*",
           "arn:aws:s3:::fiap-video-bucket-20250706/outputs/*",
-          "arn:aws:s3:::fiap-video-bucket-20250706/frames_*"
+          "arn:aws:s3:::fiap-video-bucket-20250706/frames_*",
+          "arn:aws:s3:::fiap-video-bucket-20250706/*.zip"
         ]
       }
     ]
   })
 }
+
 
