@@ -30,7 +30,14 @@ data "terraform_remote_state" "alb" {
     region = "us-east-1"
   }
 }
-
+data "terraform_remote_state" "ecs_shared_role" {
+  backend = "s3"
+  config = {
+    bucket = "terraform-states-fiap-20250706"
+    key    = "ecs-shared-role/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
 data "terraform_remote_state" "video_auth_service" {
   backend = "s3"
   config = {
@@ -168,7 +175,7 @@ resource "aws_ecs_task_definition" "this" {
   network_mode             = "awsvpc"
   cpu                      = 512
   memory                   = 1024
-  execution_role_arn       = data.terraform_remote_state.video_auth_service.outputs.ecs_task_execution_role_arn
+  execution_role_arn       = data.terraform_remote_state.ecs_shared_role.outputs.ecs_task_execution_role_arn
   task_role_arn            = aws_iam_role.video_processor_task_role.arn
 
   container_definitions = jsonencode([

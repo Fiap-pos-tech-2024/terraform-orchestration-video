@@ -14,6 +14,7 @@ find . -type f -name ".terraform.lock.hcl" -delete
 MODULES=(
   terraform-backend
   terraform-network
+  terraform-ecs-shared-role
   terraform-cognito
   terraform-video-queues
   terraform-video-bucket

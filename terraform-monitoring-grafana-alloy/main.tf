@@ -20,6 +20,15 @@ data "terraform_remote_state" "network" {
   }
 }
 
+data "terraform_remote_state" "ecs_shared_role" {
+  backend = "s3"
+  config = {
+    bucket = "terraform-states-fiap-20250706"
+    key    = "ecs-shared-role/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
 data "terraform_remote_state" "video_auth_service" {
   backend = "s3"
   config = {
@@ -73,7 +82,7 @@ resource "aws_ecs_task_definition" "grafana_alloy" {
   cpu                      = "256"
   memory                   = "512"
 
-  execution_role_arn = data.terraform_remote_state.video_auth_service.outputs.ecs_task_execution_role_arn
+  execution_role_arn = data.terraform_remote_state.ecs_shared_role.outputs.ecs_task_execution_role_arn
 
   container_definitions = jsonencode([
     {
@@ -91,9 +100,7 @@ resource "aws_ecs_task_definition" "grafana_alloy" {
         { name = "GRAFANA_REMOTE_WRITE_URL", value = var.grafana_remote_write_url },
         { name = "GRAFANA_USERNAME", value = var.grafana_username },
         { name = "GRAFANA_PASSWORD", value = var.grafana_password },
-        { name = "VIDEO_AUTH_SERVICE_ALB_DNS", value = data.terraform_remote_state.alb.outputs.alb_dns_name },
-        { name = "NOTIFICATION_SERVICE_ALB_DNS", value = data.terraform_remote_state.alb.outputs.alb_dns_name },
-        { name = "UPLOAD_SERVICE_ALB_DNS", value = data.terraform_remote_state.alb.outputs.alb_dns_name }
+        { name = "SHARED_ALB_DNS", value = data.terraform_remote_state.alb.outputs.alb_dns_name }
       ],
 
       logConfiguration = {

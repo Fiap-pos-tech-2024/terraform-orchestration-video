@@ -22,6 +22,15 @@ data "terraform_remote_state" "network" {
   }
 }
 
+data "terraform_remote_state" "ecs_shared_role" {
+  backend = "s3"
+  config = {
+    bucket = "terraform-states-fiap-20250706"
+    key    = "ecs-shared-role/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
 data "terraform_remote_state" "db" {
   backend = "s3"
   config = {
@@ -98,8 +107,8 @@ resource "aws_ecs_task_definition" "this" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
-  execution_role_arn       = var.execution_role_arn
-  task_role_arn            = var.execution_role_arn
+  execution_role_arn       = data.terraform_remote_state.ecs_shared_role.outputs.ecs_task_execution_role_arn
+  task_role_arn            = data.terraform_remote_state.ecs_shared_role.outputs.ecs_task_execution_role_arn
 
   container_definitions = jsonencode([
     {

@@ -22,6 +22,16 @@ data "terraform_remote_state" "network" {
   }
 }
 
+data "terraform_remote_state" "ecs_shared_role" {
+  backend = "s3"
+  config = {
+    bucket = "terraform-states-fiap-20250706"
+    key    = "ecs-shared-role/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
+
 data "terraform_remote_state" "alb" {
   backend = "s3"
   config = {
@@ -62,8 +72,8 @@ resource "aws_ecs_task_definition" "this" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
-  execution_role_arn       = var.execution_role_arn
-  task_role_arn            = var.execution_role_arn
+  execution_role_arn       = data.terraform_remote_state.ecs_shared_role.outputs.ecs_task_execution_role_arn
+  task_role_arn            = data.terraform_remote_state.ecs_shared_role.outputs.ecs_task_execution_role_arn
 
   container_definitions = jsonencode([
     {
@@ -79,7 +89,7 @@ resource "aws_ecs_task_definition" "this" {
         { name = "SMTP_HOST", value = var.smtp_host },
         { name = "SMTP_PORT", value = var.smtp_port },
         { name = "SMTP_USER", value = var.smtp_user },
-        { name = "SMTP_PASS", value = var.smtp_pass },
+        { name = "SMTP_PASS", value = var.smtp_pass },      
         { name = "NODE_ENV", value = "production" },
         { name = "ALB_DNS", value = data.terraform_remote_state.alb.outputs.alb_dns_name },
         { name = "BASE_PATH_AUTH", value = "http://${data.terraform_remote_state.alb.outputs.alb_dns_name}/api/auth" }
